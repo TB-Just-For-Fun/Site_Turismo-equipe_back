@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const reservaSchema = new mongoose.Schema({
   IDReserva: {
     type: String,
@@ -13,6 +14,14 @@ const reservaSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+
+disponibilidade:{
+type: Boolean,
+required:true,
+default: true,
+
+  },
+
   NumeroAdulto: {
     type: Number,
     required: true,
@@ -35,3 +44,4 @@ const reservaSchema = new mongoose.Schema({
 }, { timestamps: false });
 const Reserva = mongoose.model('Reserva', reservaSchema);
 module.exports = mongoose.model("User", reservaSchema, 'api_reservas');
+

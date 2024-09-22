@@ -1,10 +1,12 @@
-const route = require('express').Router();
-const userController = require('../controllers/user.controller'); 
+const express = require('express');
+const router = express.Router();
+const userController = require('../controllers/user.controller');
 
-route.post("/", userController.create); 
-route.get("/", userController.get); 
-route.get("/:id", userController.getById);
-route.put("/:id", userController.put); 
-route.delete("/:id", userController.apagar);
+router.post('/usuarios', userController.create); // Rota para criar um usuário
+router.get('/reservas/disponibilidade/:id', userController.getDisponibilidade); // Verificar disponibilidade de reservas
+router.get('/reservas', userController.getReservas); // Listar todas as reservas disponíveis
+router.get('/usuarios/:id', userController.getById); // Buscar usuário por ID
+router.put('/usuarios/:id', userController.put); // Atualizar usuário por ID
+router.delete('/usuarios/:id', userController.apagar); // Apagar usuário por ID
 
-module.exports = route;
+module.exports = router;

@@ -1,17 +1,45 @@
 const mongoose = require('mongoose');
 const userModel = require('../models/user');
+const Reserva = require('../models/user');
 
 const userController = {};
 
-// Função para buscar todos os usuários
-userController.get = async (req, res) => {
+
+const router = {
+  get: async (req, res) => {
+      try {
+          const usuarios = await Reserva.find();
+          res.status(200).json(usuarios); // Enviar os usuários encontrados
+      } catch (error) {
+          res.status(500).send({ message: "Ocorreu um erro ao buscar os usuários", error });
+      }
+  }
+}
+//Criar disponibilidade 
+userController.getDisponibilidade = async (req, res) => {
+  const { id } = req.params; 
   try {
-    const usuarios = await userModel.find();
-    console.log('Usuários encontrados:', usuarios);
-    return res.status(200).send(usuarios);
+      const reserva = await Reserva.findById(id); 
+      if (!reserva) {
+          return res.status(404).json({ message: 'Reserva não encontrada' }); 
+      }
+    
+      res.json({ disponibilidade: reserva.disponibilidade });
   } catch (error) {
-    console.error('Erro ao buscar usuários:', error);
-    return res.status(500).send({ message: "Ocorreu um erro ao buscar os usuários", error });
+      res.status(500).json({ message: error.message }); 
+  }
+};
+
+
+
+//LIstando todas as reeervas disponiveis
+
+userController.getReservas = async (req, res) => {
+  try {
+      const reservas = await Reserva.find({ disponibilidade: true });
+      res.json(reservas);
+  } catch (error) {
+      res.status(500).json({ message: error.message });
   }
 };
 
@@ -37,7 +65,7 @@ userController.getById = async (req, res) => {
 };
 
 // Função para criar um novo usuário
-userController.create = async (req, res) => {
+userController.create= async (req, res) => {
   const { IDReserva, dateInicio, dateFim, NumeroAdulto, NumeroCrianca, ValorTotal, StatusReserva } = req.body;
 
   if (!IDReserva || !dateInicio || !dateFim || !NumeroAdulto || !NumeroCrianca || !ValorTotal || !StatusReserva) {
@@ -58,8 +86,8 @@ userController.create = async (req, res) => {
 
     return res.status(201).send({
       IDReserva: userInstance.IDReserva,
-      dateInicio: userInstance.dateInicio.toISOString().split('T')[0],  // Apenas a data
-      dateFim: userInstance.dateFim.toISOString().split('T')[0],        // Apenas a data
+      dateInicio: userInstance.dateInicio.toISOString().split('T')[0],
+      dateFim: userInstance.dateFim.toISOString().split('T')[0],        
       NumeroAdulto: userInstance.NumeroAdulto,
       NumeroCrianca: userInstance.NumeroCrianca,
       ValorTotal: userInstance.ValorTotal,
@@ -136,3 +164,4 @@ userController.apagar = async (req, res) => {
 
 
 module.exports = userController;
+
