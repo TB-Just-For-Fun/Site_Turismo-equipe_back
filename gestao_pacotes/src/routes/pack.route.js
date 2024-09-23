@@ -4,12 +4,12 @@ const {
     get,
     put,
     apagar,
-    getByName
+    getById
 } = require("../controllers/pack.controller");
 
 route.post("/", create);
 route.get("/", get);
-route.get("/", getByName);
+route.get("/:id", getById);
 route.put("/", put);
 route.delete("/", apagar);
 
