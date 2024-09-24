@@ -68,9 +68,12 @@ reservaController.getReservaById = async (req, res) => {
     }
 };
 
+const  IDReserva = 'R' + Math.random().toString(36).substring(2, 8).toUpperCase(); // Gera um ID aleatório
+
+
 reservaController.create = async (req, res) => {
-    const { IDReserva, dateInicio, dateFim, NumeroAdulto, NumeroCrianca, ValorTotal, StatusReserva, disponibilidade } = req.body;
-    if (!IDReserva || !dateInicio || !dateFim || NumeroAdulto === undefined || NumeroCrianca === undefined || !ValorTotal || !StatusReserva || disponibilidade === undefined) {
+    const { dateInicio, dateFim, NumeroAdulto, NumeroCrianca, ValorTotal, StatusReserva, disponibilidade } = req.body;
+    if (  !dateInicio || !dateFim || NumeroAdulto === undefined || NumeroCrianca === undefined || !ValorTotal || !StatusReserva || disponibilidade === undefined) {
         return res.status(400).send({ message: "Todos os campos são obrigatórios!" });
     }
 
@@ -95,7 +98,7 @@ reservaController.create = async (req, res) => {
         return res.status(201).send({
             message: "Reserva criada com sucesso",
             reserva: {
-                IDReserva: reservaInstance.IDReserva,
+                IDReserva: reservaInstance. IDReserva,
                 dateInicio: reservaInstance.dateInicio.toISOString().split('T')[0],
                 dateFim: reservaInstance.dateFim.toISOString().split('T')[0],
                 NumeroAdulto: reservaInstance.NumeroAdulto,
@@ -116,9 +119,9 @@ reservaController.create = async (req, res) => {
 
 reservaController.put = async (req, res) => {
     const { id } = req.params;
-    const { IDReserva, dateInicio, dateFim, NumeroAdulto, NumeroCrianca, ValorTotal, StatusReserva } = req.body;
+    const {dateInicio, dateFim, NumeroAdulto, NumeroCrianca, ValorTotal, StatusReserva } = req.body;
 
-    if (!IDReserva || !dateInicio || !dateFim || !NumeroAdulto || !NumeroCrianca || !ValorTotal || !StatusReserva) {
+    if (!dateInicio || !dateFim || !NumeroAdulto || !NumeroCrianca || !ValorTotal || !StatusReserva) {
         return res.status(400).send({ message: "Todos os campos são obrigatórios!" });
     }
 
