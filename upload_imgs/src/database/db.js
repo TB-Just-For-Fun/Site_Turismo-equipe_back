@@ -9,6 +9,6 @@ async function main() {
     console.log("Conexão ao banco de dados Atlas efectuada com sucesso!");
 }
 
-main().catch((err) => console.log("Erro ao conectar ao banco de dados: ",err))
+main().catch((err) => console.log("Erro ao conectar ao banco de dados: ", err))
 
 module.exports = main;
