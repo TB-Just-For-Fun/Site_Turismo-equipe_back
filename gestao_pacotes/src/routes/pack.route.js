@@ -10,7 +10,7 @@ const {
 route.post("/", create);
 route.get("/", get);
 route.get("/:id", getById);
-route.put("/", put);
-route.delete("/", apagar);
+route.put("/:id", put);
+route.delete("/:id", apagar);
 
 module.exports = route;
