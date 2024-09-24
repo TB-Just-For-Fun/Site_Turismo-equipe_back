@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
-
 const reservaSchema = new mongoose.Schema({
   IDReserva: {
     type: String,
     required: true,
+    unique: true,
   },
   dateInicio: {
     type: Date,
@@ -14,14 +14,11 @@ const reservaSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-
-disponibilidade:{
-type: Boolean,
-required:true,
-default: true,
-
+  disponibilidade: {
+    type: Boolean,
+    required: true,
+    default: true,
   },
-
   NumeroAdulto: {
     type: Number,
     required: true,
@@ -33,15 +30,19 @@ default: true,
     min: 0,
   },
   ValorTotal: {
-    type: Number, // Mantém como Number
+    type: Number,
     required: true,
     min: 0,
   },
   StatusReserva: {
-    type: String, // Alterado para String
+    type: String,
     required: true,
   }
 }, { timestamps: false });
-const Reserva = mongoose.model('Reserva', reservaSchema);
-module.exports = mongoose.model("User", reservaSchema, 'api_reservas');
 
+// Criação do modelo Reserva
+const Reserva = mongoose.model('Reserva', reservaSchema);
+
+// Exporta o modelo
+module.exports =  Reserva ;
+module.exports = mongoose.model("user", reservaSchema,'api_reservas' )

@@ -8,7 +8,7 @@ class App {
     private io: Server;
 
     constructor() {
-        this.app = express(); //instanciar uma classe
+        this.app = express();
         this.http = http.createServer(this.app);
         this.io = new Server(this.http);
         this.listenSocket();
