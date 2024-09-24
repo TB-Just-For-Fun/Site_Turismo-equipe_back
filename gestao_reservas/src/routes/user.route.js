@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/user.controller');
+const reservaController = require('../controllers/user.controller');
 
-router.post('/usuarios', userController.create); // Rota para criar um usuário
-router.get('/reservas/disponibilidade/:id', userController.getDisponibilidade); // Verificar disponibilidade de reservas
-router.get('/reservas', userController.getReservas); // Listar todas as reservas disponíveis
-router.get('/usuarios/:id', userController.getById); // Buscar usuário por ID
-router.put('/usuarios/:id', userController.put); // Atualizar usuário por ID
-router.delete('/usuarios/:id', userController.apagar); // Apagar usuário por ID
+router.get('/calendario', reservaController.obterCalendario);
+router.post('/reservas', reservaController.create);
+router.get('/reservas/disponibilidade/:id', reservaController.getDisponibilidade); 
+router.get('/reservas/:id', reservaController.getReservaById); 
+router.put('/reservas/:id', reservaController.put);
+router.delete('/reservas/:id', reservaController.apagar);
 
 module.exports = router;
