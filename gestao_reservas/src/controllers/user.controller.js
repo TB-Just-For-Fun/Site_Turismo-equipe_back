@@ -4,25 +4,24 @@ const reservaController = {};
 
 
 reservaController.getDisponibilidade = async (req, res) => {
-  const { id } = req.params; 
-  try {
-      const reserva = await Reserva.findById(id); 
-      if (!reserva) {
-          return res.status(404).json({ message: 'A reserva não está disponível no momento. Por favor, volte a pegar seu pacote e tente novamente.' }); 
-      }
-      const disponibilidade = await disponibilidade.findById(id)
-      if (!disponibilidade) {
-        return res.status(200).json({ message: 'sua disponibilidade feita com sucesso.' }); 
+    const { id } = req.params; 
+    try {
+        const reserva = await Reserva.findById(id); 
+        if (!reserva) {
+            return res.status(404).json({ message: 'A reserva não foi encontrada. Por favor, verifique o ID e tente novamente.' });
+        }
+        if (reserva.disponibilidade) {
+            return res.status(200).json({
+                message: 'A reserva está disponível.',
+                disponibilidade: reserva.disponibilidade
+            });
+        } else {
+            return res.status(404).json({ message: 'A reserva foi encontrada, mas não há disponibilidade no momento.' });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: "Erro ao buscar a reserva ou a disponibilidade", error: error.message });
     }
-
-      res.json({ 
-          message: 'A reserva está disponível.',
-          disponibilidade: reserva.disponibilidade 
-      });
-  } catch (error) {
-      res.status(200).json({ message: error.message }); 
-  }
-  };
+};
 
 
 reservaController.obterCalendario = async (req, res) => {
@@ -54,26 +53,34 @@ reservaController.obterCalendario = async (req, res) => {
 reservaController.getReservaById = async (req, res) => {
     const { id } = req.params;
 
+    
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).send({ message: "ID inválido" });
     }
 
     try {
+        
         const reserva = await Reserva.findById(id);
+        
+        
         if (!reserva) {
             return res.status(404).send({ message: "Reserva não encontrada" });
         }
-        return res.status(200).json(reserva);
+        
+        
+        return res.status(200).json({
+            message: "Reserva encontrada",
+            reserva
+        });
     } catch (error) {
+        
         return res.status(500).send({ message: "Erro ao buscar a reserva", error });
     }
 };
 
-
 reservaController.create = async (req, res) => {
-    const { IDReserva, dateInicio, dateFim, NumeroAdulto, NumeroCrianca, ValorTotal, StatusReserva } = req.body;
-
-    if (!IDReserva || !dateInicio || !dateFim || !NumeroAdulto || !NumeroCrianca || !ValorTotal || !StatusReserva) {
+    const { IDReserva, dateInicio, dateFim, NumeroAdulto, NumeroCrianca, ValorTotal, StatusReserva, disponibilidade } = req.body;
+    if (!IDReserva || !dateInicio || !dateFim || NumeroAdulto === undefined || NumeroCrianca === undefined || !ValorTotal || !StatusReserva || disponibilidade === undefined) {
         return res.status(400).send({ message: "Todos os campos são obrigatórios!" });
     }
 
@@ -86,22 +93,35 @@ reservaController.create = async (req, res) => {
             NumeroCrianca,
             ValorTotal,
             StatusReserva,
+            disponibilidade,
         });
+        const eventoCalendario = {
+            title: `Reserva ${reservaInstance.IDReserva}`,
+            start: reservaInstance.dateInicio.toISOString().split('T')[0],
+            end: reservaInstance.dateFim.toISOString().split('T')[0],
+        };
 
+      
         return res.status(201).send({
-            IDReserva: reservaInstance.IDReserva,
-            dateInicio: reservaInstance.dateInicio.toISOString().split('T')[0],
-            dateFim: reservaInstance.dateFim.toISOString().split('T')[0],        
-            NumeroAdulto: reservaInstance.NumeroAdulto,
-            NumeroCrianca: reservaInstance.NumeroCrianca,
-            ValorTotal: reservaInstance.ValorTotal,
-            StatusReserva: reservaInstance.StatusReserva,
+            message: "Reserva criada com sucesso",
+            reserva: {
+                IDReserva: reservaInstance.IDReserva,
+                dateInicio: reservaInstance.dateInicio.toISOString().split('T')[0],
+                dateFim: reservaInstance.dateFim.toISOString().split('T')[0],
+                NumeroAdulto: reservaInstance.NumeroAdulto,
+                NumeroCrianca: reservaInstance.NumeroCrianca,
+                ValorTotal: reservaInstance.ValorTotal,
+                StatusReserva: reservaInstance.StatusReserva,
+                disponibilidade: reservaInstance.disponibilidade 
+            },
+            calendario: eventoCalendario
         });
     } catch (error) {
         console.error('Erro ao criar a reserva:', error);
         return res.status(500).send({ message: "Erro ao criar a reserva", error });
     }
 };
+
 
 
 reservaController.put = async (req, res) => {
