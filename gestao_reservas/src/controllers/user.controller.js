@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
-const { Reserva } = require('../models/user'); 
+const Reserva = require('../models/user'); 
 const reservaController = {};
 
+
+const userController = {};
 
 reservaController.getDisponibilidade = async (req, res) => {
     const { id } = req.params; 
@@ -49,31 +51,19 @@ reservaController.obterCalendario = async (req, res) => {
   }
 };
 
-
 reservaController.getReservaById = async (req, res) => {
     const { id } = req.params;
-
-    
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).send({ message: "ID inválido" });
     }
 
     try {
-        
         const reserva = await Reserva.findById(id);
-        
-        
         if (!reserva) {
-            return res.status(404).send({ message: "Reserva não encontrada" });
+            return res.status(404).send({ message: "Reserva não encontrada!" });
         }
-        
-        
-        return res.status(200).json({
-            message: "Reserva encontrada",
-            reserva
-        });
+        return res.status(200).json(reserva);
     } catch (error) {
-        
         return res.status(500).send({ message: "Erro ao buscar a reserva", error });
     }
 };
@@ -178,7 +168,6 @@ reservaController.apagar = async (req, res) => {
 
         return res.status(200).send({ message: "Reserva removida com sucesso!", reserva });
     } catch (error) {
-        console.error('Erro ao remover a reserva:', error);
         return res.status(500).send({ message: "Erro ao remover a reserva", error });
     }
 };

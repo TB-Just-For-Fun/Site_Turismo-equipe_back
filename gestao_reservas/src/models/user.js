@@ -4,6 +4,7 @@ const reservaSchema = new mongoose.Schema({
   IDReserva: {
     type: String,
     required: true,
+    unique: true,
   },
   dateInicio: {
     type: Date,
@@ -43,4 +44,5 @@ const reservaSchema = new mongoose.Schema({
 const Reserva = mongoose.model('Reserva', reservaSchema);
 
 // Exporta o modelo
-module.exports = { Reserva };
+module.exports =  Reserva ;
+module.exports = mongoose.model("user", reservaSchema,'api_reservas' )
