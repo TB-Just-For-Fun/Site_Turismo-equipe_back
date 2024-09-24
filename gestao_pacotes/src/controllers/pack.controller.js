@@ -1,59 +1,45 @@
+const { default: mongoose } = require("mongoose");
 const packModel = require("../models/pack");
 const packController = {}
 
 //Método get para retornar um array com todos pacotes
-packController.get = async (req,res) => {
-    try{
-        const {} = req.query;
+packController.get = async (req, res) => {
+    try {
+        const { } = req.query;
 
         const pacotes = await packModel.find();
 
         return res.status(200).send(pacotes);
     }
-    catch(error){
+    catch (error) {
         console.log(error);
-        return res.status(400).send({message: "Ocorreu um erro!", error: error})
+        return res.status(400).send({ message: "Ocorreu um erro!", error: error })
     }
 };
 
-//método getByName para retornar um pacote específico pelo Nome
-packController.getByName = async (req, res) => { 
-    const { nome_pacote } = req.params;
+//método getById para retornar um pacote específico pelo Nome
+packController.getById = async (req, res) => {
+    const { id } = req.params.id;
 
-    if (!nome_pacote) {
-        return res.status(400).send({ message: "Nome do pacote é obrigatório!" });
+    const pacote = await packModel.findOne(id);
+
+    if(!pacote){
+        return res.status(404).send("Pacote não encontrado!")
     }
-
-    try {
-        console.log(`Buscando pacote com nome: ${nome_pacote}`);
-        const pacoteExiste = await packModel.findOne({ nome_pacote: nome_pacote });
-
-        if (pacoteExiste) {
-            return res.status(200).json({
-                message: "Pacote encontrado:",
-                pacote: pacoteExiste
-            });
-        } else {
-            return res.status(404).send({ message: "Pacote não encontrado!" });
-        }
-    } catch (error) {
-        console.error("Erro ao buscar pacote:", error); // Log de erro
-        return res.status(500).send({ message: "Erro ao buscar pacote.", error: error.message });
-    }
+    res.status(200).send(pacote);
 };
 
 //rota de criação de pacotes com o método post
-packController.create = async (req, res) =>{
-    const {nome_pacote, actividades, duracao, servicos, preco, obs} = req.body;
+packController.create = async (req, res) => {
+    const { nome_pacote, actividades, duracao, servicos, preco, obs } = req.body;
 
-    if(!nome_pacote || !actividades || !duracao || !servicos || !preco || !obs)
-    {
-        res.status(400).send({message: "Todos os campos são obrigatórios!"});
+    if (!nome_pacote || !actividades || !duracao || !servicos || !preco || !obs) {
+        res.status(400).send({ message: "Todos os campos são obrigatórios!" });
     }
-    
-    const pacoteExiste = await packModel.findOne({nome_pacote});
 
-    if(pacoteExiste){
+    const pacoteExiste = await packModel.findOne({ nome_pacote });
+
+    if (pacoteExiste) {
         res.status(401).send({
             message: "Já existe um pacote com esse nome!",
             pacoteExiste
@@ -64,7 +50,7 @@ packController.create = async (req, res) =>{
     })
     res.status(200).send({
         message: "Pacote criado com sucesso!",
-        pack:{
+        pack: {
             nome_pacote,
             actividades,
             duracao,
@@ -75,19 +61,19 @@ packController.create = async (req, res) =>{
     });
 };
 packController.put = async (req, res) => {
-    const {id} = req.params;
-    const {nome_pacote, actividades, duracao, servicos, obs} = req.body;
+    const { id } = req.params;
+    const { nome_pacote, actividades, duracao, servicos, obs } = req.body;
 
-    const pacote = await packModel.findOneAndUpdate(id, {...req.body}, {new:true})
+    const pacote = await packModel.findOneAndUpdate(id, { ...req.body }, { new: true })
     res.status(200).send({
         message: "Pacote actualizado com sucesso!",
         pacote,
     });
 };
-packController.apagar =  async (req, res) => {
-    const {id} = req.params;
+packController.apagar = async (req, res) => {
+    const { id } = req.params.id;
 
-    const pacote = await packModel.deleteOne({_id:id});
+    const pacote = await packModel.deleteOne({ _id: id });
 
     return res.status(201).send(pacote);
 };
