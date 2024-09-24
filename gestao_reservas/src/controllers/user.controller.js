@@ -3,6 +3,16 @@ const Reserva = require('../models/user');
 const reservaController = {};
 
 
+const moment = require('moment-timezone');
+const timezone = moment.tz.guess();
+console.log(`Fuso horário detectado: ${timezone}`);
+const dateInicio = moment.tz('2024-10-01 13:30', 'Africa/Luanda').format();
+const dateFim = moment.tz('2024-10-05 09:00', 'Africa/Luanda').format();
+
+console.log(`Início: ${dateInicio}, Fim: ${dateFim}`);
+
+
+
 const userController = {};
 
 reservaController.getDisponibilidade = async (req, res) => {
@@ -80,8 +90,8 @@ reservaController.create = async (req, res) => {
     try {
         const reservaInstance = await Reserva.create({
             IDReserva,
-            dateInicio: new Date(dateInicio),
-            dateFim: new Date(dateFim),
+            dateInicio: moment.tz(dateInicio, 'Angola/Huíla_lubango').toDate(),
+            dateFim: moment.tz(dateFim, 'Angola/Huíla_lubango').toDate(),
             NumeroAdulto,
             NumeroCrianca,
             ValorTotal,
@@ -132,8 +142,8 @@ reservaController.put = async (req, res) => {
     try {
         const reserva = await Reserva.findByIdAndUpdate(id, {
             IDReserva,
-            dateInicio: new Date(dateInicio),
-            dateFim: new Date(dateFim),
+            dateInicio: moment.tz(dateInicio, 'Angola/Huíla_lubango').toDate(),
+            dateFim: moment.tz(dateFim, 'Angola/Huíla_lubango').toDate(),
             NumeroAdulto,
             NumeroCrianca,
             ValorTotal,

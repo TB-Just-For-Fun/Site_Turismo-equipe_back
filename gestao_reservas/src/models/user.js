@@ -40,9 +40,7 @@ const reservaSchema = new mongoose.Schema({
   }
 }, { timestamps: false });
 
-// Criação do modelo Reserva
-const Reserva = mongoose.model('Reserva', reservaSchema);
 
-// Exporta o modelo
+const Reserva = mongoose.model('Reserva', reservaSchema);
 module.exports =  Reserva ;
 module.exports = mongoose.model("user", reservaSchema,'api_reservas' )
