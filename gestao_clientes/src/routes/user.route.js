@@ -1,5 +1,6 @@
-const route = require('express').Router();
-const authMiddleware = require('../middlewares/auth.middleware');
+const express = require('express');
+const route = express.Router(); // Inicializa o router do Express
+const { authMiddleware, verificarAdminSupremoExistente } = require('../middlewares/auth.middleware'); // Importa os middlewares
 const {
     create,
     get,
@@ -7,22 +8,33 @@ const {
     put,
     apagar,
     login,
-    createAdmin
-} = require('../controllers/user.controller');
+    createFirstAdmin,
+    createAdmin,
+    logout
+} = require('../controllers/user.controller'); // Desestrutura os métodos do controller 
 
-// Rota de login
+// Rota de login (rota pública)
 route.post("/login", login);
 
 // Rotas públicas
-route.post("/", create);
+route.post("/", create); // Rota para criar um novo usuário (pode ser um registro público)
 
-// Rotas protegidas
+// Rota para criação do primeiro admin (sem necessidade de estar logado)
+route.post('/createFirstAdmin', verificarAdminSupremoExistente, createFirstAdmin);
+
+// Rota para criação de admin (somente Administrador Supremo pode criar outros administradores)
+route.post('/create-admin', authMiddleware.verifyToken, authMiddleware.verifyAdminSupremo, createAdmin);
+
+// Middleware de verificação de token para rotas protegidas
 route.use(authMiddleware.verifyToken);
 
-route.get("/", get);
-route.get("/:id", getById);
-route.put("/:id", put);
-route.delete("/:id", apagar);
-route.post('/create-admin', authMiddleware.verifyAdmin, createAdmin);
+// Rotas protegidas que precisam de autenticação
+route.get("/", get);              
+route.get("/:id", getById);        
+route.put("/:id", put);            
+route.delete("/:id", apagar);      
+
+// Rota de logout
+route.post('/logout', logout);     
 
 module.exports = route;
