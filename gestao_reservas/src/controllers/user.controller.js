@@ -90,8 +90,8 @@ reservaController.create = async (req, res) => {
     try {
         const reservaInstance = await Reserva.create({
             IDReserva,
-            dateInicio: moment.tz(dateInicio, 'Angola/Huíla_lubango').toDate(),
-            dateFim: moment.tz(dateFim, 'Angola/Huíla_lubango').toDate(),
+            dateInicio: moment. tz (dateInicio, 'Angola/Huíla_lubango') . toDate (),
+            dateFim: moment. tz (dateFim, 'Angola/Huíla_lubango') . toDate (),
             NumeroAdulto,
             NumeroCrianca,
             ValorTotal,
