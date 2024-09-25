@@ -1,12 +1,21 @@
-const Picture = require("../modules/picture");
+const Picture = require("../models/picture");
 
-const pictureController = {};
-
-pictureController.create = async (res, req) => {
+exports.create = async (res, req) => {
     try {
-        const name = req.body;
+        const { name } = req.body;
         const file = req.file;
 
+        console.log(req.body);
+        //verificação do nome do ficheiro
+        if (!name) {
+            return res.status(400).send("Nome do ficheiro não recebido!");
+        }
+        //verificação do ficheiro
+        if (!file) {
+            return res.status(400).send("Ficheiro não recebido!");
+        }
+
+        //objecto responsável por salvar a imagem
         const picture = new Picture({
             name,
             src: file.path,
@@ -14,11 +23,9 @@ pictureController.create = async (res, req) => {
 
         await picture.save();
 
-        res.json({ picture, message: "Imagem salva com sucesso!" })
+        res.json({ picture, message: "Imagem salva com sucesso!" });
     }
     catch (error) {
-        return res.send("Erro ao fazer o upload da imagem!");
+        console.log("Houve um erro ao carregar a imagem: ", error);
     }
 }
-
-module.exports = pictureController;
