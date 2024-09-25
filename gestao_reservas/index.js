@@ -10,6 +10,6 @@ connectDatabase();
 app.use(express.json());
 
 app.use("/api_reservas/calendario", reservaRoute);
-app.use("/api_reservas", reservaRoute); // Adicionando rotas de reservas
+app.use("/api_reservas", reservaRoute);
 
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
