@@ -7,4 +7,4 @@ const pictureSchema = new Schema({
     src: { type: String, require: true }
 })
 
-module.exports = mongoose.model("Pictures", pictureSchema);
+module.exports = mongoose.model("Picture", pictureSchema);
