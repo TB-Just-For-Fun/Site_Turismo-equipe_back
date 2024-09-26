@@ -7,8 +7,8 @@ require("./src/database/db")
 const port = process.env.PORT || 3000;
 const pictureRouter = require("./src/routes/picture.route");
 
-app.use("/picture", pictureRouter);
 app.use(express.json());
+app.use("/pictures", pictureRouter);
 
 
 app.listen(port, () => {
