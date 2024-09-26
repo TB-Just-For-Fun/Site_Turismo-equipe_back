@@ -44,7 +44,7 @@ class App {
             const conversationId = Object.keys(this.conversations).length + 1;
 
            
-            const welcomeMessage = "Olá! Bem-vindo ao nosso site de turismo. Aqui você pode encontrar informações sobre destinos incríveis e pacotes de viagem.";
+            const welcomeMessage = "Olá! Bem-vindo ao nosso site de turismo. Aqui você pode encontrar informações sobre destinos incríveis e pacotes de viagem. Qual é a sua pergunta?";
 
            
             this.conversations[conversationId] = [
@@ -93,7 +93,7 @@ class App {
         });
 
         this.app.get('/', (req: Request, res: Response) => {
-            res.sendFile(__dirname + './index.html'); 
+            res.sendFile(__dirname + '/'); 
         });
     }
 }
