@@ -16,6 +16,7 @@
     "express": "^4.21.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mogoose": "^0.0.1-security",
     "mongoose": "^8.6.3",
     "socket.io": "^4.7.5"
   },
