@@ -3,7 +3,7 @@ const Picture = require("../models/picture");
 exports.create = async (res, req) => {
     try {
         const { name } = req.body;
-        const file = req.file;
+        const file = req.files;
 
         console.log(req.body);
         //verificação do nome do ficheiro
