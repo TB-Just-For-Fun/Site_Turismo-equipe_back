@@ -3,9 +3,36 @@ const http = require('http');
 const Server = require('socket.io');
 const cron = require('node-cron');
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+const SMTP_CONFIG = require('../Config/Smtp'); 
 
 
+exports.notificarNovaDisponibilidade = async (destinatarios, disponibilidade) => {
+    const assunto = "Nova Disponibilidade Disponível!";
+    const mensagem = `Temos uma nova disponibilidade: ${disponibilidade}. Confira no nosso site!`;
+    
+    for (let destinatario of destinatarios) {
+        await enviarNotificacao(destinatario, assunto, mensagem);
+    }
+};
 
+
+exports.notificarNovaReserva = async (destinatario, reserva) => {
+    const assunto = "Nova Reserva Realizada!";
+    const mensagem = `Sua reserva foi confirmada! Detalhes: ${JSON.stringify(reserva)}.`;
+    
+    await enviarNotificacao(destinatario, assunto, mensagem);
+};
+
+
+exports.notificarNovoPacote = async (destinatarios, pacote) => {
+    const assunto = "Novo Pacote Disponível!";
+    const mensagem = `Confira nosso novo pacote: ${pacote.nome}. Aproveite esta oportunidade!`;
+
+    for (let destinatario of destinatarios) {
+        await enviarNotificacao(destinatario, assunto, mensagem);
+    }
+};
 
 
 exports.criarNotificacao = async (req, res) => {
@@ -25,9 +52,6 @@ exports.criarNotificacao = async (req, res) => {
 };
 
 
-const nodemailer = require('nodemailer');
-const SMTP_CONFIG = require('../Config/Smtp'); 
-
 async function enviarNotificacao(destinatario, assunto, mensagem) {
     
     const transporter = nodemailer.createTransport({
@@ -43,16 +67,14 @@ async function enviarNotificacao(destinatario, assunto, mensagem) {
         },
     });
 
-   
     const emailBody = `
     Olá ${destinatario},
     
-    ${mensagem} // Inclua a mensagem aqui para que o destinatário saiba do que se trata
+    ${mensagem} 
     `;
 
-    
     await transporter.sendMail({
-        from: `"José Casimiro" <${SMTP_CONFIG.user}>`, 
+        from: `"Just For Fun" <${SMTP_CONFIG.user}>`, 
         to: destinatario, 
         subject: assunto, 
         text: emailBody, 
