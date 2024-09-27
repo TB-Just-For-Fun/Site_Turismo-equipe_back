@@ -1,31 +1,56 @@
 const Picture = require("../models/picture");
 
-exports.create = async (res, req) => {
+const fs = require("fs");
+
+exports.create = async (req, res) => {
     try {
         const { name } = req.body;
-        const file = req.files;
 
-        console.log(req.body);
-        //verificação do nome do ficheiro
-        if (!name) {
-            return res.status(400).send("Nome do ficheiro não recebido!");
-        }
-        //verificação do ficheiro
-        if (!file) {
-            return res.status(400).send("Ficheiro não recebido!");
-        }
+        const file = req.file;
 
-        //objecto responsável por salvar a imagem
         const picture = new Picture({
             name,
-            src: file.path,
-        })
+            src: file.path
+        });
 
         await picture.save();
 
-        res.json({ picture, message: "Imagem salva com sucesso!" });
+        res.json({ picture, msg: "Imagem salva com sucesso!" });
     }
     catch (error) {
-        console.log("Houve um erro ao carregar a imagem: ", error);
+        res.status(500).json({ message: "Erro ao enviar a imagem:", error });
+    }
+}
+
+exports.findAll = async (req, res) => {
+    try {
+        const pictures = await Picture.find();
+
+        res.json(pictures);
+    }
+    catch (erro) {
+        res.status(500).send({ message: "Erro ao buscar imagem!" });
+        console.log(erro);
+    }
+}
+
+exports.remove = async (req, res) => {
+    try {
+        const picture = await Picture.findById(req.params.id);
+
+        if (!picture) {
+            return res.status(404).json({ message: "Imagem não encontrada!" })
+        }
+
+        fs.unlinkSync(picture.src);
+
+        await picture.deleteOne();
+
+        res.status(200).json({ message: "Imagem removida com sucesso!" });
+
+    }
+    catch (error) {
+        res.status(500).send("Houve um erro ao apagar a imagem!");
+        console.log(error);
     }
 }
