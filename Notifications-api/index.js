@@ -1,8 +1,7 @@
 const express = require('express');
 const notificacoesRoutes = require('./routes/notificacoes.route');
 const connectDatabase = require("./database/db");
-require('dotenv').config();
-
+const SMTP_CONFIG = require("./Config/Smtp")
 connectDatabase();
 
 require('dotenv').config();
