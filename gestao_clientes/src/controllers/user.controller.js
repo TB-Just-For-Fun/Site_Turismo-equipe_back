@@ -3,13 +3,16 @@ const jwt = require('jsonwebtoken');
 const userModel = require('../models/user.models');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
+const SMTP_CONFIG = require("../config/smtp");
 
 const userController = {}; // Objeto para armazenar funções do controlador de usuários
 
-// Função de Login
 userController.login = async (req, res) => {
+    // Verifica se o corpo da requisição está sendo recebido corretamente
+
     const { email, password } = req.body;
 
+    // Verifica se email e senha foram fornecidos
     if (!email || !password) {
         return res.status(400).send({ message: "Email e senha são obrigatórios" });
     }
@@ -17,33 +20,40 @@ userController.login = async (req, res) => {
     try {
         const user = await userModel.findOne({ email });
 
+        // Verifica se o usuário existe
         if (!user) {
-            return res.status(401).send({ message: "Credenciais inválidas" });
+            return res.status(401).send({ message: "Email ou Senha incorretos" });
         }
 
+        // Compara a senha fornecida com a senha armazenada no banco de dados
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).send({ message: "Credenciais inválidas" });
+            return res.status(401).send({ message: "Email ou Senha incorretos" });
         }
 
+        // Gera o token JWT
         const generateToken = (user) => {
             return jwt.sign(
-                { id: user._id, role: user.role },  // Inclui o ID e o role do usuário
-                process.env.JWT_SECRET,
-                { expiresIn: '2d' }  // Define a expiração do token
+                { 
+                    id: user._id,  
+                    role: user.role  
+                },  
+                process.env.JWT_SECRET,  // Chave secreta para assinar o token
+                { expiresIn: '2d' }  // Define a expiração do token para 2 dias
             );
         };
-
-        // Gera o token chamando a função 'generateToken'
+        
+        // Gerar o token
         const token = generateToken(user);
 
         // Retorna o token na resposta
-        return res.status(200).send({ token });
+        return res.status(200).send({ message: 'Login bem-sucedido', token });
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: "Erro no login", error });
     }
 };
+
 
 
 // Função de logout
@@ -124,22 +134,26 @@ userController.createAdmin = async (req, res) => {
             role: 'administrador' // Define que o novo usuário será um administrador
         });
 
-        // Configuração do transportador de email
+        // Configuração do transportador de email usando SMTP_CONFIG
         const transporter = nodemailer.createTransport({
-            host: process.env.EMAIL_HOST,
-            port: process.env.EMAIL_PORT,
+            host: SMTP_CONFIG.host,
+            port: SMTP_CONFIG.port,
+            secure: false, // Use `true` se estiver utilizando a porta 465
             auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
+                user: SMTP_CONFIG.user,
+                pass: SMTP_CONFIG.pass,
+            },
+            tls: {
+                rejectUnauthorized: process.env.NODE_ENV !== 'production' ? false : true,
+            },
         });
 
         // Envio de email de boas-vindas
         await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+            from: `"Supreme Admin" <${SMTP_CONFIG.user}>`,
             to: email,
             subject: 'Bem-vindo ao sistema!',
-            text: 'Seu cadastro como administrador foi realizado com sucesso!'
+            text: 'Seu cadastro como administrador foi realizado com sucesso!',
         });
 
         return res.status(201).send({
@@ -148,6 +162,12 @@ userController.createAdmin = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
+
+        // Verifique o tipo de erro para fornecer respostas mais detalhadas
+        if (error.message.includes("SMTP")) {
+            return res.status(500).send({ message: "Erro ao enviar o e-mail", error });
+        }
+
         return res.status(500).send({ message: "Erro ao criar administrador", error });
     }
 };
@@ -156,7 +176,7 @@ userController.createAdmin = async (req, res) => {
 // Método GET (acesso apenas por administradores)
 userController.get = async (req, res) => {
     try {
-        if (req.user.role !== 'administrador') {
+        if (req.user.role !== 'administrador' && req.user.role !== 'administrador_supremo') {
             return res.status(403).send({ message: "Acesso negado. Apenas administradores." });
         }
 
@@ -166,7 +186,7 @@ userController.get = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: "Ocorreu um erro", error });
     }
-}
+};
 
 // Método getById
 userController.getById = async (req, res) => {
@@ -182,7 +202,7 @@ userController.getById = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: "Ocorreu um erro", error });
     }
-}
+};
 
 // Método CREATE (disponível para criação de clientes)
 userController.create = async (req, res) => {
@@ -216,16 +236,61 @@ userController.create = async (req, res) => {
         // Remove a senha antes de retornar o usuário
         const { password: _, ...userResponse } = userInstance.toObject();
 
+        // Envia um e-mail de confirmação para o usuário
+        await enviarEmailConfirmacao(userResponse.email, userResponse.username);
+
         // Retorna a resposta de sucesso
         return res.status(201).send({
-            message: "Usuário criado com sucesso",
+            message: "Usuário criado com sucesso. Verifique seu e-mail para mais detalhes.",
             user: userResponse
         });
     } catch (error) {
         console.error(error);
         return res.status(500).send({
-            message: "Erro ao criar usuário"
+            message: "Erro ao criar usuário",
+            error
         });
+    }
+};
+
+// Função auxiliar para enviar o email de confirmação
+async function enviarEmailConfirmacao(email, username) {
+    try {
+        const transporter = nodemailer.createTransport({
+            host: SMTP_CONFIG.host,
+            port: SMTP_CONFIG.port,
+            secure: false, // Use true se estiver usando a porta 465
+            auth: {
+                user: SMTP_CONFIG.user,
+                pass: SMTP_CONFIG.pass,
+            },
+            tls: {
+                rejectUnauthorized: false,
+            },
+        });
+
+        // Corpo do email
+        const emailBody = `
+            Olá ${username},
+
+            Seu cadastro foi realizado com sucesso!
+            
+            Volte agora à nossa página e faça login com as suas credenciais.
+
+            Atenciosamente,
+            Just For Fun
+        `;
+
+        await transporter.sendMail({
+            from: `"Just For Fun" <${SMTP_CONFIG.user}>`,
+            to: email,
+            subject: 'Cadastro realizado com sucesso!',
+            text: emailBody,
+        });
+
+        console.log(`Email de confirmação enviado para ${email}`);
+    } catch (error) {
+        console.error("Erro ao enviar o email de confirmação:", error);
     }
 };
 
@@ -235,31 +300,23 @@ userController.put = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const usuario = await userModel.findByIdAndUpdate(id, req.body, { new: true });
-        if (!usuario) {
+        // Criptografa a senha, se fornecida
+        if (req.body.password) {
+            req.body.password = await bcrypt.hash(req.body.password, 10);
+        }
+
+        // Busca o usuário atual antes da atualização
+        const usuarioAtual = await userModel.findById(id);
+        if (!usuarioAtual) {
             return res.status(404).send({ message: "Usuário não encontrado" });
         }
 
-        return res.status(200).send({
-            message: "Usuário atualizado com sucesso",
-            usuario
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
-    }
-}
+        // Atualiza o usuário
+        const usuarioAtualizado = await userModel.findByIdAndUpdate(id, req.body, { new: true });
 
-// Método PATCH para atualizar parcialmente um usuário
-userController.patch = async (req, res) => {
-    const { id } = req.params;
-    const updateFields = req.body;
-
-    try {
-        const usuarioAtualizado = await userModel.findByIdAndUpdate(id, updateFields, { new: true });
-
-        if (!usuarioAtualizado) {
-            return res.status(404).send({ message: "Usuário não encontrado" });
+        // Verifica se o role foi alterado para 'administrador' e envia um email de promoção
+        if (usuarioAtualizado.role === 'administrador' && usuarioAtual.role !== 'administrador') {
+            await enviarEmailPromocao(usuarioAtualizado.email);
         }
 
         return res.status(200).send({
@@ -271,6 +328,114 @@ userController.patch = async (req, res) => {
         return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
     }
 };
+
+// Método PATCH para atualizar parcialmente um usuário
+userController.patch = async (req, res) => {
+    const { id } = req.params;  // ID do usuário a ser atualizado (se disponível)
+    const { email } = req.query;  // Email do usuário a ser atualizado (se disponível)
+    const updateFields = req.body;  // Campos a serem atualizados
+    const { user } = req;  // Usuário logado (informações do token)
+
+    try {
+        let usuarioAtual;
+
+        // Busca o usuário atual antes da atualização, por id ou email
+        if (id) {
+            usuarioAtual = await userModel.findById(id);
+        } else if (email) {
+            usuarioAtual = await userModel.findOne({ email });
+        } else {
+            return res.status(400).send({ message: "Por favor, forneça um id ou email para atualização" });
+        }
+
+        if (!usuarioAtual) {
+            return res.status(404).send({ message: "Usuário não encontrado" });
+        }
+
+        // Verifica se o usuário tem permissão para atualizar
+        if (user.role === 'cliente') {
+            // Clientes só podem atualizar seus próprios dados
+            if (user._id.toString() !== usuarioAtual._id.toString()) {
+                return res.status(403).send({ message: "Acesso negado. Você só pode atualizar seus próprios dados." });
+            }
+        } else if (user.role === 'administrador') {
+            // Administradores não podem atualizar outros administradores ou o administrador supremo
+            if (usuarioAtual.role === 'administrador' || usuarioAtual.role === 'administrador_supremo') {
+                return res.status(403).send({ message: "Acesso negado. Você não pode atualizar outros administradores." });
+            }
+        }
+
+        // Restringir campos que podem ser atualizados
+        const camposPermitidos = {
+            cliente: ['username', 'password', 'numero'],
+            administrador: ['username', 'password', 'numero'],
+            administrador_supremo: ['username', 'password', 'numero', 'email', 'role'],
+        };
+
+        // Verifica os campos que estão sendo atualizados
+        for (const campo in updateFields) {
+            // Se o campo não for permitido para o papel do usuário, retornar erro
+            if (!camposPermitidos[user.role].includes(campo)) {
+                return res.status(403).send({ message: `Acesso negado. Você não pode atualizar o campo "${campo}".` });
+            }
+        }
+
+        // Criptografa a senha, se fornecida
+        if (updateFields.password) {
+            updateFields.password = await bcrypt.hash(updateFields.password, 10);
+        }
+
+        // Atualiza o usuário
+        const usuarioAtualizado = await userModel.findByIdAndUpdate(usuarioAtual._id, updateFields, { new: true });
+
+        // Verifica se o role foi alterado para 'administrador' e envia um email de promoção
+        if (usuarioAtualizado.role === 'administrador' && usuarioAtual.role !== 'administrador') {
+            await enviarEmailPromocao(usuarioAtualizado.email);
+        }
+
+        return res.status(200).send({
+            message: "Usuário atualizado com sucesso",
+            usuario: usuarioAtualizado
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
+    }
+};
+
+
+
+
+// Função auxiliar para enviar o email de promoção
+async function enviarEmailPromocao(email) {
+    try {
+        const transporter = nodemailer.createTransport({
+            host: SMTP_CONFIG.host,
+            port: SMTP_CONFIG.port,
+            secure: false, // Use true se estiver usando a porta 465
+            auth: {
+                user: SMTP_CONFIG.user,
+                pass: SMTP_CONFIG.pass,
+            },
+            tls: {
+                rejectUnauthorized: process.env.NODE_ENV !== 'production' ? false : true,
+            },
+        });
+
+        await transporter.sendMail({
+            from: `"Just For Fun" <${SMTP_CONFIG.user}>`,
+            to: email,
+            subject: 'Parabéns! Você foi promovido a administrador',
+            text: 'Seu papel no sistema foi atualizado para administrador. Parabéns pela promoção!',
+        });
+
+        console.log(`Email de promoção enviado para ${email}`);
+    } catch (error) {
+        console.error("Erro ao enviar o email de promoção:", error);
+    }
+}
+
+
 
 // Método DELETE para deletar um usuário
 userController.apagar = async (req, res) => {
@@ -287,23 +452,36 @@ userController.apagar = async (req, res) => {
             return res.status(404).send({ message: "Usuário não encontrado" });
         }
 
+        // Admin Supremo pode deletar qualquer conta, incluindo a própria
         if (role === 'administrador_supremo') {
             await userModel.findByIdAndDelete(id);
             return res.status(200).send({ message: "Usuário deletado com sucesso" });
         }
 
+        // Administrador (que não é supremo)
         if (role === 'administrador') {
+            // Verifica se o admin está tentando deletar outra conta de admin
             if (usuarioDeletado.role === 'administrador' && usuarioDeletado._id.toString() !== userId.toString()) {
                 return res.status(403).send({ message: "Acesso negado. Apenas o administrador supremo pode deletar contas de outros administradores." });
             }
 
-            // Administrador pode deletar sua própria conta ou a conta de clientes
-            if (usuarioDeletado.role === 'cliente' || usuarioDeletado._id.toString() === userId.toString()) {
+            // Admin pode deletar a própria conta ou a conta de clientes
+            if (usuarioDeletado._id.toString() === userId.toString() || usuarioDeletado.role === 'cliente') {
                 await userModel.findByIdAndDelete(id);
                 return res.status(200).send({ message: "Usuário deletado com sucesso" });
             }
 
             return res.status(403).send({ message: "Acesso negado. Você não pode deletar esse usuário." });
+        }
+
+        // Cliente pode deletar apenas a própria conta
+        if (role === 'cliente') {
+            if (usuarioDeletado._id.toString() === userId.toString()) {
+                await userModel.findByIdAndDelete(id);
+                return res.status(200).send({ message: "Conta deletada com sucesso" });
+            }
+
+            return res.status(403).send({ message: "Acesso negado. Você só pode deletar a sua própria conta." });
         }
 
         return res.status(403).send({ message: "Acesso negado." });
@@ -312,5 +490,6 @@ userController.apagar = async (req, res) => {
         return res.status(500).send({ message: "Erro ao deletar usuário", error });
     }
 };
+
 
 module.exports = userController;

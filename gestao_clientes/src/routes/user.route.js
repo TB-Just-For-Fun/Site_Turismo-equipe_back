@@ -6,6 +6,7 @@ const {
     get,
     getById,
     put,
+    patch,
     apagar,
     login,
     createFirstAdmin,
@@ -30,7 +31,8 @@ route.use(authMiddleware.verifyToken);
 
 // Rotas protegidas que precisam de autenticação
 route.get("/", get);              
-route.get("/:id", getById);        
+route.get("/:id", getById);  
+route.patch("/:id", patch);     
 route.put("/:id", put);            
 route.delete("/:id", apagar);      
 
