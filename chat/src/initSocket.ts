@@ -1,4 +1,14 @@
 import { Server } from 'socket.io';
+import express from "express";
+import http from "http";
+
+const  app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors:{
+    origin:"*",
+  },
+});
 
 const initSocket = (server: any) => {
   const io = new Server(server, {
@@ -10,7 +20,7 @@ const initSocket = (server: any) => {
 
 
   io.on('connection', (socket) => {
-    console.log('Usuário conectado');
+    console.log('Usuário conectado', socket.id);
 
    
     socket.on('sendMessage', (message) => {
@@ -19,12 +29,16 @@ const initSocket = (server: any) => {
       const botReply = `Resposta do Bot: Você disse "${message}"`;
       
 
-      socket.emit('receiveMessage', botReply);
+      io.emit('receiveMessage', message);
     });
 
  
     socket.on('disconnect', () => {
-      console.log('Usuário desconectado');
+      console.log('Usuário desconectado', socket.id);
+
+      server.listen(8080, () => {
+        console.log('servidor rodando na porta 8080');
+      })
     });
   });
 };
