@@ -1,24 +1,28 @@
 const express = require('express');
-const route = express.Router(); // Inicializa o router do Express
-const { authMiddleware, verificarAdminSupremoExistente } = require('../middlewares/auth.middleware'); // Importa os middlewares
+const route = express.Router();
+const { authMiddleware, verificarAdminSupremoExistente } = require('../middlewares/auth.middleware'); 
 const {
     create,
     get,
     getById,
+    getByEmail,
     put,
     patch,
     apagar,
+    apagarByEmail,
     login,
     createFirstAdmin,
     createAdmin,
-    logout
-} = require('../controllers/user.controller'); // Desestrutura os métodos do controller 
+    logout,
+    patchByEmail, 
+    putByEmail 
+} = require('../controllers/user.controller'); 
 
 // Rota de login (rota pública)
 route.post("/login", login);
 
 // Rotas públicas
-route.post("/", create); // Rota para criar um novo usuário (pode ser um registro público)
+route.post("/", create); 
 
 // Rota para criação do primeiro admin (sem necessidade de estar logado)
 route.post('/createFirstAdmin', verificarAdminSupremoExistente, createFirstAdmin);
@@ -31,10 +35,14 @@ route.use(authMiddleware.verifyToken);
 
 // Rotas protegidas que precisam de autenticação
 route.get("/", get);              
-route.get("/:id", getById);  
-route.patch("/:id", patch);     
-route.put("/:id", put);            
-route.delete("/:id", apagar);      
+route.get("/:id", getById); 
+route.get("/email", getByEmail);     
+route.patch("/:id", patch);       
+route.patch("/email", patchByEmail); 
+route.put("/:id", put);           
+route.put("/email", putByEmail);  
+route.delete("/:id", apagar);     
+route.delete("/email", apagarByEmail);
 
 // Rota de logout
 route.post('/logout', logout);     

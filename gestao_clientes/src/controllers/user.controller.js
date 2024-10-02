@@ -9,6 +9,7 @@ const userController = {}; // Objeto para armazenar funções do controlador de 
 
 userController.login = async (req, res) => {
     // Verifica se o corpo da requisição está sendo recebido corretamente
+    console.log(req.body);
 
     const { email, password } = req.body;
 
@@ -22,30 +23,28 @@ userController.login = async (req, res) => {
 
         // Verifica se o usuário existe
         if (!user) {
-            return res.status(401).send({ message: "Email ou Senha incorretos" });
+            return res.status(401).send({ message: "Email ou senha incorretos" });
         }
 
         // Compara a senha fornecida com a senha armazenada no banco de dados
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).send({ message: "Email ou Senha incorretos" });
+            return res.status(401).send({ message: "Email ou senha incorretos" });
         }
 
         // Gera o token JWT
         const generateToken = (user) => {
             return jwt.sign(
                 { 
-                    id: user._id,  
-                    role: user.role  
+                    id: user.id,  
+                    role: user.role 
                 },  
-                process.env.JWT_SECRET,  // Chave secreta para assinar o token
-                { expiresIn: '2d' }  // Define a expiração do token para 2 dias
+                process.env.JWT_SECRET,
+                { expiresIn: '2d' }  // Define a expiração do token
             );
         };
         
-        // Gerar o token
         const token = generateToken(user);
-
         // Retorna o token na resposta
         return res.status(200).send({ message: 'Login bem-sucedido', token });
     } catch (error) {
@@ -204,6 +203,23 @@ userController.getById = async (req, res) => {
     }
 };
 
+// Método getByEmail
+userController.getByEmail = async (req, res) => {
+    const { email } = req.params;
+
+    try {
+        const usuario = await userModel.findOne({ email: email }); // Utilizando findOne para buscar pelo email
+        if (!usuario) {
+            return res.status(404).send({ message: "Usuário não encontrado" });
+        }
+        return res.status(200).send(usuario);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: "Ocorreu um erro", error });
+    }
+};
+
+
 // Método CREATE (disponível para criação de clientes)
 userController.create = async (req, res) => {
     try {
@@ -295,89 +311,99 @@ async function enviarEmailConfirmacao(email, username) {
 };
 
 
-// Método PUT para atualizar um usuário
+// Método PUT para atualização completa pelo ID
 userController.put = async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.params;  // ID do usuário
+    const updateFields = req.body;
+    const { user } = req;  // Usuário logado (informações do token)
 
     try {
-        // Criptografa a senha, se fornecida
-        if (req.body.password) {
-            req.body.password = await bcrypt.hash(req.body.password, 10);
-        }
-
-        // Busca o usuário atual antes da atualização
         const usuarioAtual = await userModel.findById(id);
         if (!usuarioAtual) {
             return res.status(404).send({ message: "Usuário não encontrado" });
         }
 
-        // Atualiza o usuário
-        const usuarioAtualizado = await userModel.findByIdAndUpdate(id, req.body, { new: true });
-
-        // Verifica se o role foi alterado para 'administrador' e envia um email de promoção
-        if (usuarioAtualizado.role === 'administrador' && usuarioAtual.role !== 'administrador') {
-            await enviarEmailPromocao(usuarioAtualizado.email);
+        // Verifica os campos permitidos com base no papel do usuário logado
+        if (!temPermissaoParaAtualizar(user, updateFields, usuarioAtual)) {
+            return res.status(403).send({ message: "Acesso negado. Você não pode atualizar este usuário." });
         }
+
+        // Criptografa a senha, se fornecida
+        if (updateFields.password) {
+            updateFields.password = await bcrypt.hash(updateFields.password, 10);
+        }
+
+        // Atualiza o usuário
+        const usuarioAtualizado = await userModel.findByIdAndUpdate(usuarioAtual._id, updateFields, { new: true });
+        
+        // Envia email de promoção, se aplicável
+        await verificarEEnviarEmailPromocao(usuarioAtualizado, usuarioAtual);
 
         return res.status(200).send({
             message: "Usuário atualizado com sucesso",
             usuario: usuarioAtualizado
         });
+
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
     }
 };
 
-// Método PATCH para atualizar parcialmente um usuário
-userController.patch = async (req, res) => {
-    const { id } = req.params;  // ID do usuário a ser atualizado (se disponível)
-    const { email } = req.query;  // Email do usuário a ser atualizado (se disponível)
-    const updateFields = req.body;  // Campos a serem atualizados
+// Método PUT para atualização completa pelo Email
+userController.putByEmail = async (req, res) => {
+    const { email } = req.query;  // Email do usuário
+    const updateFields = req.body;
     const { user } = req;  // Usuário logado (informações do token)
 
     try {
-        let usuarioAtual;
-
-        // Busca o usuário atual antes da atualização, por id ou email
-        if (id) {
-            usuarioAtual = await userModel.findById(id);
-        } else if (email) {
-            usuarioAtual = await userModel.findOne({ email });
-        } else {
-            return res.status(400).send({ message: "Por favor, forneça um id ou email para atualização" });
+        const usuarioAtual = await userModel.findOne({ email });
+        if (!usuarioAtual) {
+            return res.status(404).send({ message: "Usuário não encontrado" });
         }
 
+        // Verifica os campos permitidos com base no papel do usuário logado
+        if (!temPermissaoParaAtualizar(user, updateFields, usuarioAtual)) {
+            return res.status(403).send({ message: "Acesso negado. Você não pode atualizar este usuário." });
+        }
+
+        // Criptografa a senha, se fornecida
+        if (updateFields.password) {
+            updateFields.password = await bcrypt.hash(updateFields.password, 10);
+        }
+
+        // Atualiza o usuário
+        const usuarioAtualizado = await userModel.findByEmailAndUpdate(usuarioAtual.email, updateFields, { new: true });
+
+        // Envia email de promoção, se aplicável
+        await verificarEEnviarEmailPromocao(usuarioAtualizado, usuarioAtual);
+
+        return res.status(200).send({
+            message: "Usuário atualizado com sucesso",
+            usuario: usuarioAtualizado
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
+    }
+};
+
+// Método PATCH para atualização parcial de um usuário
+userController.patch = async (req, res) => {
+    const { id } = req.params;
+    const updateFields = req.body;
+    const { user } = req;
+
+    try {
+        const usuarioAtual = await userModel.findById(id);
         if (!usuarioAtual) {
             return res.status(404).send({ message: "Usuário não encontrado" });
         }
 
         // Verifica se o usuário tem permissão para atualizar
-        if (user.role === 'cliente') {
-            // Clientes só podem atualizar seus próprios dados
-            if (user._id.toString() !== usuarioAtual._id.toString()) {
-                return res.status(403).send({ message: "Acesso negado. Você só pode atualizar seus próprios dados." });
-            }
-        } else if (user.role === 'administrador') {
-            // Administradores não podem atualizar outros administradores ou o administrador supremo
-            if (usuarioAtual.role === 'administrador' || usuarioAtual.role === 'administrador_supremo') {
-                return res.status(403).send({ message: "Acesso negado. Você não pode atualizar outros administradores." });
-            }
-        }
-
-        // Restringir campos que podem ser atualizados
-        const camposPermitidos = {
-            cliente: ['username', 'password', 'numero'],
-            administrador: ['username', 'password', 'numero'],
-            administrador_supremo: ['username', 'password', 'numero', 'email', 'role'],
-        };
-
-        // Verifica os campos que estão sendo atualizados
-        for (const campo in updateFields) {
-            // Se o campo não for permitido para o papel do usuário, retornar erro
-            if (!camposPermitidos[user.role].includes(campo)) {
-                return res.status(403).send({ message: `Acesso negado. Você não pode atualizar o campo "${campo}".` });
-            }
+        if (!temPermissaoParaAtualizar(user, updateFields, usuarioAtual)) {
+            return res.status(403).send({ message: "Acesso negado. Você não pode atualizar este usuário." });
         }
 
         // Criptografa a senha, se fornecida
@@ -388,10 +414,95 @@ userController.patch = async (req, res) => {
         // Atualiza o usuário
         const usuarioAtualizado = await userModel.findByIdAndUpdate(usuarioAtual._id, updateFields, { new: true });
 
-        // Verifica se o role foi alterado para 'administrador' e envia um email de promoção
-        if (usuarioAtualizado.role === 'administrador' && usuarioAtual.role !== 'administrador') {
-            await enviarEmailPromocao(usuarioAtualizado.email);
+        return res.status(200).send({
+            message: "Usuário atualizado com sucesso",
+            usuario: usuarioAtualizado
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
+    }
+}; 
+
+// Função auxiliar para verificar permissões de atualização
+function temPermissaoParaAtualizar(user, updateFields, usuarioAtual) {
+    const camposPermitidos = {
+        cliente: ['username', 'password', 'numero'],
+        administrador: ['username', 'password', 'numero', 'email'],
+        administrador_supremo: ['username', 'password', 'numero', 'email', 'role'],
+    };
+
+    // Verifica os campos que estão sendo atualizados
+    for (const campo in updateFields) {
+        if (!camposPermitidos[user.role].includes(campo) && user.role !== 'administrador_supremo') {
+            return false;
         }
+    }
+
+    // Impede alterações de papel (role) por usuários não autorizados
+    if (updateFields.role && user.role !== 'administrador_supremo') {
+        return false;
+    }
+
+    // Administradores não podem alterar o email de outros administradores
+    if (updateFields.email && user.role === 'administrador' && usuarioAtual.role === 'administrador') {
+        return false;
+    }
+
+    return true;
+} 
+
+// Método PATCH para atualizar parcialmente um usuário pelo email
+userController.patchByEmail = async (req, res) => {
+    const { email } = req.query; // Email do usuário a ser atualizado
+    const updateFields = req.body; // Campos a serem atualizados
+    const { user } = req; // Usuário logado
+
+    try {
+        // Busca o usuário pelo email
+        const usuarioAtual = await userModel.findOne({ email });
+
+        if (!usuarioAtual) {
+            return res.status(404).send({ message: "Usuário não encontrado" });
+        }
+
+        // Restringir a atualização com base no papel do usuário logado
+        if (user.role === 'cliente') {
+            if (user.email.toString() !== usuarioAtual.email.toString()) {
+                return res.status(403).send({ message: "Acesso negado. Você só pode atualizar seus próprios dados." });
+            }
+        } else if (user.role === 'administrador') {
+            if (usuarioAtual.role === 'administrador_supremo') {
+                return res.status(403).send({ message: "Acesso negado. Você não pode atualizar o administrador supremo." });
+            }
+        }
+
+        // Campos permitidos para atualização
+        const camposPermitidos = {
+            cliente: ['username', 'password', 'numero'],
+            administrador: ['username', 'password', 'numero', 'email'],
+            administrador_supremo: ['username', 'password', 'numero', 'email', 'role'],
+        };
+
+        // Verifica os campos que estão sendo atualizados
+        for (const campo in updateFields) {
+            if (!camposPermitidos[user.role].includes(campo)) {
+                return res.status(403).send({ message: `Acesso negado. Você não pode atualizar o campo "${campo}".` });
+            }
+
+            // Administradores não podem alterar o email de outros administradores
+            if (campo === 'email' && user.role === 'administrador' && usuarioAtual.role === 'administrador') {
+                return res.status(403).send({ message: "Acesso negado. Administradores não podem alterar o email de outros administradores." });
+            }
+        }
+
+        // Criptografa a senha, se fornecida
+        if (updateFields.password) {
+            updateFields.password = await bcrypt.hash(updateFields.password, 10);
+        }
+
+        // Atualiza o usuário
+        const usuarioAtualizado = await userModel.findOneAndUpdate({ email }, updateFields, { new: true });
 
         return res.status(200).send({
             message: "Usuário atualizado com sucesso",
@@ -404,7 +515,12 @@ userController.patch = async (req, res) => {
 };
 
 
-
+// Função auxiliar para verificar e enviar email de promoção
+async function verificarEEnviarEmailPromocao(usuarioAtualizado, usuarioAtual) {
+    if (usuarioAtualizado.role === 'administrador' && usuarioAtual.role !== 'administrador') {
+        await enviarEmailPromocao(usuarioAtualizado.email);
+    }
+}
 
 // Função auxiliar para enviar o email de promoção
 async function enviarEmailPromocao(email) {
@@ -412,7 +528,7 @@ async function enviarEmailPromocao(email) {
         const transporter = nodemailer.createTransport({
             host: SMTP_CONFIG.host,
             port: SMTP_CONFIG.port,
-            secure: false, // Use true se estiver usando a porta 465
+            secure: false,
             auth: {
                 user: SMTP_CONFIG.user,
                 pass: SMTP_CONFIG.pass,
@@ -434,6 +550,7 @@ async function enviarEmailPromocao(email) {
         console.error("Erro ao enviar o email de promoção:", error);
     }
 }
+
 
 
 
@@ -478,6 +595,60 @@ userController.apagar = async (req, res) => {
         if (role === 'cliente') {
             if (usuarioDeletado._id.toString() === userId.toString()) {
                 await userModel.findByIdAndDelete(id);
+                return res.status(200).send({ message: "Conta deletada com sucesso" });
+            }
+
+            return res.status(403).send({ message: "Acesso negado. Você só pode deletar a sua própria conta." });
+        }
+
+        return res.status(403).send({ message: "Acesso negado." });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: "Erro ao deletar usuário", error });
+    }
+};
+
+// Método DELETE para deletar um usuário por email
+userController.apagarByEmail = async (req, res) => {
+    const { email } = req.params;
+    const { role, email: userEmail } = req.user;
+
+    if (!mongoose.Types.ObjectEmail.isValid(email)) {
+        return res.status(400).send({ message: "Email inválido" });
+    }
+
+    try {
+        const usuarioDeletado = await userModel.findByEmail(email);
+        if (!usuarioDeletado) {
+            return res.status(404).send({ message: "Usuário não encontrado" });
+        }
+
+        // Admin Supremo pode deletar qualquer conta, incluindo a própria
+        if (role === 'administrador_supremo') {
+            await userModel.findByEmailAndDelete(email);
+            return res.status(200).send({ message: "Usuário deletado com sucesso" });
+        }
+
+        // Administrador (que não é supremo)
+        if (role === 'administrador') {
+            // Verifica se o admin está tentando deletar outra conta de admin
+            if (usuarioDeletado.role === 'administrador' && usuarioDeletado.email.toString() !== userEmail.toString()) {
+                return res.status(403).send({ message: "Acesso negado. Apenas o administrador supremo pode deletar contas de outros administradores." });
+            }
+
+            // Admin pode deletar a própria conta ou a conta de clientes
+            if (usuarioDeletado.email.toString() === userEmail.toString() || usuarioDeletado.role === 'cliente') {
+                await userModel.findByEmailAndDelete(id);
+                return res.status(200).send({ message: "Usuário deletado com sucesso" });
+            }
+
+            return res.status(403).send({ message: "Acesso negado. Você não pode deletar esse usuário." });
+        }
+
+        // Cliente pode deletar apenas a própria conta
+        if (role === 'cliente') {
+            if (usuarioDeletado.email.toString() === userEmail.toString()) {
+                await userModel.findByEmailAndDelete(email);
                 return res.status(200).send({ message: "Conta deletada com sucesso" });
             }
 
