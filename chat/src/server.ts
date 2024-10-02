@@ -4,6 +4,9 @@ import { Server } from 'socket.io';
 import connectDatabase from './database/db'; 
 import cors from 'cors';
 import chatRoutes from './routes/chatRoutes'; 
+import initSocket from './initSocket';
+
+
 
 class App {
     private app: Application;
