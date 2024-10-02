@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from "express";
 import http from 'http';
 import { Server } from 'socket.io';
 import connectDatabase from './database/db'; 
+import cors from 'cors';
 
 connectDatabase();
 
@@ -15,8 +16,15 @@ class App {
         this.app = express();
         this.http = http.createServer(this.app);
         this.io = new Server(this.http);
+        this.middlewares(); 
         this.listenSocket();
         this.setupRouters();
+    }
+
+    
+    private middlewares(): void {
+        this.app.use(cors());
+        this.app.use(express.json());
     }
 
     listenServer() {
@@ -39,9 +47,7 @@ class App {
     }
 
     setupRouters() {
-        this.app.use(express.json());
-
-     
+      
         this.app.post('/chat', (req, res) => {
             const { userMessage } = req.body;
             const conversationId = Object.keys(this.conversations).length + 1;
@@ -56,7 +62,6 @@ class App {
             res.status(201).send({ message: botMessage, conversationId });
         });
 
-      
         this.app.post('/chat/:id', (req: Request, res: Response) => {
             const chatId = req.params.id;
             const { userMessage } = req.body;
@@ -73,7 +78,6 @@ class App {
             }
         });
 
-      
         this.app.get('/chat/:id', (req, res) => {
             const chatId = req.params.id;
             const conversation = this.conversations[chatId];
@@ -84,7 +88,6 @@ class App {
             }
         });
 
-     
         this.app.post('/tickets', (req, res) => {
             res.status(201).send({ message: "Ticket de suporte criado." });
         });
@@ -94,20 +97,17 @@ class App {
             res.status(200).send({ message: `Detalhes do ticket ${ticketId}.` });
         });
 
-       
         this.app.get('/', (req, res) => {
             res.sendFile(__dirname + '/');
         });
     }
 
-   
     getRandomMessage(category: keyof typeof responses): string {
         const messages = responses[category];
         const randomIndex = Math.floor(Math.random() * messages.length);
         return messages[randomIndex];
     }
 }
-
 
 const responses = {
     greetings: [
@@ -126,6 +126,7 @@ const responses = {
         "Se precisar de mais informações, estou aqui para ajudar."
     ]
 };
+
 
 const app = new App();
 app.listenServer();
