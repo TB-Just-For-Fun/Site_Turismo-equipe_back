@@ -18,7 +18,9 @@
     "moment-timezone": "^0.5.45",
     "moment-timezone-data-webpack-plugin": "^1.5.1",
     "mongoose": "^8.6.2",
-    "nodemon": "^3.1.4",
     "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }

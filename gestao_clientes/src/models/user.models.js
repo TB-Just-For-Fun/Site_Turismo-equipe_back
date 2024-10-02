@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         unique: true,
         required: true,
-        lowercase: true, // Converte o email para minúsculas
+        lowercase: true, 
     },
     numero: {
         type: String,
@@ -24,10 +24,10 @@ const userSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    role: {
+    role: { // novo campo adicionado
         type: String,
-        enum: ['cliente', 'administrador'],
-        default: 'cliente' // Corrigido para uma string simples
+        enum: ['cliente', 'administrador', 'administrador_supremo'], // Enum para definir os tipos de usuário
+        default: 'cliente',  
     },
     date: {
         type: Date,
