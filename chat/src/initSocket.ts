@@ -6,14 +6,14 @@ const  app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors:{
-    origin:"*",
+    origin:"http://localhost:3000/cht",
   },
 });
 
-const initSocket = (server: any) => {
+const initSocket = () => {
   const io = new Server(server, {
     cors: {
-      origin: "*",
+      origin: "http://localhost:3000/cht",
       methods: ["GET", "POST"]
     }
   });
@@ -24,7 +24,7 @@ const initSocket = (server: any) => {
 
    
     socket.on('sendMessage', (message) => {
-      console.log(`Mensagem recebida: ${message}`);
+      io.emit(`Mensagem recebida: ${message}`);
 
       const botReply = `Resposta do Bot: Você disse "${message}"`;
       
