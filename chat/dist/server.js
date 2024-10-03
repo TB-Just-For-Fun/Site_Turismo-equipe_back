@@ -1,9 +1,9 @@
 import express from "express";
 import http from 'http';
 import { Server } from 'socket.io';
-import connectDatabase from './database/db';
+import connectDatabase from './database/db.js';
+import chatRoutes from './routes/chatRoutes.js';
 import cors from 'cors';
-import chatRoutes from './routes/chatRoutes';
 class App {
     app;
     http;

@@ -1,10 +1,10 @@
 import express, { Application } from "express";
 import http from 'http';
 import { Server } from 'socket.io';
-import connectDatabase from './database/db';
+import connectDatabase from './database/db.js';
+import chatRoutes from './routes/chatRoutes.js';
+import initSocket from './initSocket.js';
 import cors from 'cors';
-import chatRoutes from './routes/chatRoutes'; 
-import initSocket from './initSocket';
 
 class App {
     private app: Application;
