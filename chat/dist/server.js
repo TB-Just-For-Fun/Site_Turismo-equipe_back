@@ -1,49 +1,36 @@
-import express from "express";
+import express from 'express';
 import http from 'http';
 import cors from 'cors';
-import { initSocket } from './initSocket.js';
-import connectDatabase from './database/db.js';
-import chatRoutes from './routes/chatRoutes.js';
-// Configuração do Express
-const appExpress = express();
-appExpress.use(cors({
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['content-type'],
-    credentials: true
-}));
-// Classe App que controla o servidor
+import { initSocket } from './initSocket';
+import chatRoutes from './routes/chatRoutes';
 class App {
     app;
-    http;
+    server;
+    io;
     constructor() {
         this.app = express();
-        this.http = http.createServer(this.app);
+        this.server = http.createServer(this.app);
+        this.io = initSocket(this.server);
         this.middlewares();
-        this.setupRouters();
-        this.listenServer();
+        this.routes();
     }
     middlewares() {
-        this.app.use(cors());
+        this.app.use(cors({
+            origin: ['http://localhost:3000', 'http://192.168.43.54:8080', 'http://192.168.43.40:3000'],
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization'],
+            credentials: true
+        }));
         this.app.use(express.json());
     }
-    listenServer() {
-        // Iniciando o servidor HTTP
-        this.http.listen(8080, () => {
-            console.log('O servidor está rodando na porta 8080');
-        });
-        // Tratamento de erros do servidor
-        this.http.on('error', (error) => {
-            console.error('Erro ao iniciar o servidor:', error.message);
-        });
-        // Iniciando o WebSocket
-        initSocket(this.http); // Passando o servidor HTTP para o WebSocket
-    }
-    setupRouters() {
+    routes() {
         this.app.use('/api/chat', chatRoutes);
-        this.app.use('/api/tickets', chatRoutes);
+    }
+    listen(port) {
+        this.server.listen(port, () => {
+            console.log(`Servidor rodando na porta ${port}`);
+        });
     }
 }
-// Conectando ao banco de dados e iniciando a aplicação
-connectDatabase();
-const serverApp = new App();
+const app = new App();
+app.listen(8080);

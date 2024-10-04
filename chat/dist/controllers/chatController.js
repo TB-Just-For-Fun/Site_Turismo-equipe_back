@@ -18,15 +18,13 @@ const responses = {
 const conversations = {};
 export const createChat = (req, res) => {
     const { userMessage } = req.body;
-    let botResponse = "Desculpa não entendi sua pergunta";
-    const conversationId = Object.keys(conversations).length + 1;
     const botMessage = getRandomMessage("greetings");
+    const conversationId = Object.keys(conversations).length + 1;
     conversations[conversationId] = [
         { sender: 'User', text: userMessage },
         { sender: 'Bot', text: botMessage }
     ];
     res.status(201).send({ message: botMessage, conversationId });
-    res.json({ botResponse });
 };
 export const replyChat = (req, res) => {
     const chatId = req.params.id;

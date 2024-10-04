@@ -1,31 +1,28 @@
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
+import http from 'http';
 
-// Função para iniciar o WebSocket
-export const initSocket = (server: any) => {
-    // Criação da instância do Socket.io atrelada ao servidor HTTP
+export const initSocket = (server: http.Server): Server => {
     const io = new Server(server, {
         cors: {
-            origin: 'http://localhost:3000',
+            origin: ['http://localhost:3000', 'http://192.168.43.54:8080', 'http://192.168.43.40:3000'],
             methods: ['GET', 'POST'],
-            credentials: true,
+            credentials: true
         }
     });
 
-    // Lógica de conexão WebSocket
-    io.on('connection', (socket: Socket) => {
+    io.on('connection', (socket) => {
         console.log(`Cliente conectado: ${socket.id}`);
 
-        // Ouvindo o evento 'sendMessage' vindo do cliente
+        // Escutar mensagens enviadas pelo cliente
         socket.on('sendMessage', (message) => {
-            console.log('Mensagem recebida via WebSocket:', message);
-
-            // Envia a mensagem para todos os clientes conectados
-            io.emit('receiveMessage', { text: `Bot responde: Recebido "${message.text}"` });
+            console.log('Mensagem recebida do cliente:', message);
+            io.emit('receiveMessage', { text: `Usuário ${socket.id} disse: ${message.text}` });
         });
 
-        // Ouvindo a desconexão do cliente
         socket.on('disconnect', () => {
             console.log('Cliente desconectado:', socket.id);
         });
     });
+
+    return io;
 };

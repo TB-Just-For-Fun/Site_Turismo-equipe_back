@@ -22,10 +22,8 @@ const conversations: { [key: string]: Array<{ sender: string; text: string }> } 
 
 export const createChat = (req: Request, res: Response) => {
     const { userMessage } = req.body;
-    let botResponse = "Desculpa não entendi sua pergunta";
-    const conversationId = Object.keys(conversations).length + 1;
-
     const botMessage = getRandomMessage("greetings");
+    const conversationId = Object.keys(conversations).length + 1;
 
     conversations[conversationId] = [
         { sender: 'User', text: userMessage },
@@ -33,7 +31,6 @@ export const createChat = (req: Request, res: Response) => {
     ];
 
     res.status(201).send({ message: botMessage, conversationId });
-    res.json({ botResponse });
 };
 
 export const replyChat = (req: Request, res: Response) => {
