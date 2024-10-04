@@ -1,46 +1,31 @@
-import { Server } from 'socket.io';
-import express from "express";
-import http from "http";
+import { Server, Socket } from 'socket.io';
 
-const  app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors:{
-    origin:"http://localhost:3000/cht",
-  },
-});
-
-const initSocket = () => {
-  const io = new Server(server, {
-    cors: {
-      origin: "http://localhost:3000/cht",
-      methods: ["GET", "POST"]
-    }
-  });
-
-
-  io.on('connection', (socket) => {
-    console.log('Usuário conectado', socket.id);
-
-   
-    socket.on('sendMessage', (message) => {
-      io.emit(`Mensagem recebida: ${message}`);
-
-      const botReply = `Resposta do Bot: Você disse "${message}"`;
-      
-
-      io.emit('receiveMessage', message);
+// Função para iniciar o WebSocket
+export const initSocket = (server: any) => {
+    // Criação da instância do Socket.io atrelada ao servidor HTTP
+    const io = new Server(server, {
+        cors: {
+            origin: 'http://localhost:3000',
+            methods: ['GET', 'POST'],
+            credentials: true,
+        }
     });
 
- 
-    socket.on('disconnect', () => {
-      console.log('Usuário desconectado', socket.id);
+    // Lógica de conexão WebSocket
+    io.on('connection', (socket: Socket) => {
+        console.log(`Cliente conectado: ${socket.id}`);
 
-      server.listen(8080, () => {
-        console.log('servidor rodando na porta 8080');
-      })
+        // Ouvindo o evento 'sendMessage' vindo do cliente
+        socket.on('sendMessage', (message) => {
+            console.log('Mensagem recebida via WebSocket:', message);
+
+            // Envia a mensagem para todos os clientes conectados
+            io.emit('receiveMessage', { text: `Bot responde: Recebido "${message.text}"` });
+        });
+
+        // Ouvindo a desconexão do cliente
+        socket.on('disconnect', () => {
+            console.log('Cliente desconectado:', socket.id);
+        });
     });
-  });
 };
-
-export default initSocket;
