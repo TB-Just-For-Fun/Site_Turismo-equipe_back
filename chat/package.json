@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
@@ -18,7 +19,6 @@
     "express": "^4.21.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mogoose": "^0.0.1-security",
     "mongoose": "^8.7.0",
     "socket.io": "^4.8.0"
   },
@@ -30,5 +30,7 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.19.1",
     "typescript": "^5.6.2"
-  }
+  },
+  "keywords": [],
+  "description": ""
 }

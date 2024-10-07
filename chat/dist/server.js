@@ -1,50 +1,36 @@
-import express, { Application } from 'express';
+import express from 'express';
 import http from 'http';
 import cors from 'cors';
-import database from './database/db';
-import { Server } from 'socket.io';
 import { initSocket } from './initSocket';
-import chatRoutes from './routes/chatRoutes'; 
-import connectDatabase from './database/db.js';
-
+import chatRoutes from './routes/chatRoutes';
 class App {
-    public app: Application;
-    public server: http.Server;
-    public io: Server;
-
+    app;
+    server;
+    io;
     constructor() {
         this.app = express();
         this.server = http.createServer(this.app);
-        this.io = initSocket(this.server); 
-
+        this.io = initSocket(this.server);
         this.middlewares();
         this.routes();
     }
-
-    
-    private middlewares(): void {
+    middlewares() {
         this.app.use(cors({
             origin: ['http://localhost:3000', 'http://192.168.43.54:8080', 'http://192.168.43.40:3000'],
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization'],
             credentials: true
         }));
-
         this.app.use(express.json());
     }
-
-   
-    private routes(): void {
-        this.app.use('/api/chat', chatRoutes); 
+    routes() {
+        this.app.use('/api/chat', chatRoutes);
     }
-
-  
-    public listen(port: number): void {
+    listen(port) {
         this.server.listen(port, () => {
             console.log(`Servidor rodando na porta ${port}`);
         });
     }
 }
-connectDatabase();
 const app = new App();
 app.listen(8080);

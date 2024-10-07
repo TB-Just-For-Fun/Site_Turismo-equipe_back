@@ -1,5 +1,3 @@
-import { Request, Response } from 'express';
-
 const responses = {
     greetings: [
         "Olá! Como posso ajudar hoje?",
@@ -17,58 +15,48 @@ const responses = {
         "Se precisar de mais informações, estou aqui para ajudar."
     ]
 };
-
-const conversations: { [key: string]: Array<{ sender: string; text: string }> } = {};
-
-export const createChat = (req: Request, res: Response) => {
+const conversations = {};
+export const createChat = (req, res) => {
     const { userMessage } = req.body;
     const botMessage = getRandomMessage("greetings");
     const conversationId = Object.keys(conversations).length + 1;
-
     conversations[conversationId] = [
         { sender: 'User', text: userMessage },
         { sender: 'Bot', text: botMessage }
     ];
-
     res.status(201).send({ message: botMessage, conversationId });
 };
-
-export const replyChat = (req: Request, res: Response) => {
+export const replyChat = (req, res) => {
     const chatId = req.params.id;
     const { userMessage } = req.body;
-
     if (conversations[chatId]) {
         const botResponse = getRandomMessage("services");
-
         conversations[chatId].push({ sender: 'User', text: userMessage });
         conversations[chatId].push({ sender: 'Bot', text: botResponse });
-
         res.status(200).send({ message: botResponse });
-    } else {
+    }
+    else {
         res.status(404).send({ error: "Conversa não encontrada." });
     }
 };
-
-export const getChat = (req: Request, res: Response) => {
+export const getChat = (req, res) => {
     const chatId = req.params.id;
     const conversation = conversations[chatId];
     if (conversation) {
         res.status(200).send({ id: chatId, messages: conversation });
-    } else {
+    }
+    else {
         res.status(404).send({ error: 'Conversa não encontrada.' });
     }
 };
-
-export const createTicket = (req: Request, res: Response) => {
+export const createTicket = (req, res) => {
     res.status(201).send({ message: "Ticket de suporte criado." });
 };
-
-export const getTicket = (req: Request, res: Response) => {
+export const getTicket = (req, res) => {
     const ticketId = req.params.id;
     res.status(200).send({ message: `Detalhes do ticket ${ticketId}.` });
 };
-
-const getRandomMessage = (category: keyof typeof responses): string => {
+const getRandomMessage = (category) => {
     const messages = responses[category];
     const randomIndex = Math.floor(Math.random() * messages.length);
     return messages[randomIndex];

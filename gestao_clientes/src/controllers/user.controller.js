@@ -454,13 +454,19 @@ function temPermissaoParaAtualizar(user, updateFields, usuarioAtual) {
 
 // Método PATCH para atualizar parcialmente um usuário pelo email
 userController.patchByEmail = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     const { email } = req.query; // Email do usuário a ser atualizado
     const updateFields = req.body; // Campos a serem atualizados
     const { user } = req; // Usuário logado
 
     try {
         // Busca o usuário pelo email
-        const usuarioAtual = await userModel.findOne({ email });
+        const usuarioAtual = await userModel.findOne({ email: email }); 
+
 
         if (!usuarioAtual) {
             return res.status(404).send({ message: "Usuário não encontrado" });
@@ -494,25 +500,35 @@ userController.patchByEmail = async (req, res) => {
             if (campo === 'email' && user.role === 'administrador' && usuarioAtual.role === 'administrador') {
                 return res.status(403).send({ message: "Acesso negado. Administradores não podem alterar o email de outros administradores." });
             }
-        }
 
-        // Criptografa a senha, se fornecida
-        if (updateFields.password) {
-            updateFields.password = await bcrypt.hash(updateFields.password, 10);
+            // Criptografa a senha, se fornecida
+            if (campo === 'password') {
+                updateFields.password = await bcrypt.hash(updateFields.password, 10)
+                    .catch(err => {
+                        console.error('Erro ao criptografar a senha:', err);
+                        return res.status(500).send({ message: 'Erro ao atualizar o usuário' });
+                    });
+            }
         }
 
         // Atualiza o usuário
-        const usuarioAtualizado = await userModel.findOneAndUpdate({ email }, updateFields, { new: true });
+        const usuarioAtualizado = await userModel.findOneAndUpdate(
+            { email: email }, // Use email aqui, não _id
+            updateFields,
+            { new: true } // Retornar o documento atualizado
+        );
+        
 
         return res.status(200).send({
             message: "Usuário atualizado com sucesso",
-            usuario: usuarioAtualizado
+            usuario: usuarioAtualizado.toObject({ transform: (doc, ret) => { delete ret.password; return ret; } })
         });
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
     }
 };
+
 
 
 // Função auxiliar para verificar e enviar email de promoção
