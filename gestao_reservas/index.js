@@ -3,7 +3,7 @@ const app = express();
 const connectDatabase = require("./src/database/db");
 const reservaRoute = require('./src/routes/user.route');
 
-const PORT = 3000; 
+const PORT = 8080; 
 
 connectDatabase();
 

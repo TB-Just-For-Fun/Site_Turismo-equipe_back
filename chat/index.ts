@@ -19,14 +19,21 @@ interface Message {
 
 connectDatabase();
 
-fetch('/chat', { method: 'POST'});  
+fetch('/api/chat', { method: 'POST' });  
 
 
-app.use('/chat', (req, res) => {
-  res.send("Bem-vindo ao chat!");
+app.post('/api/chat', (req, res) => {
+  const message = req.body.message;
+  res.status(200).json({reponse:`msg recebida: ${message}`});
 });
 
-const port = 8080;
+
+app.get('/api/chat', (req, res) => {
+  const message = req.body.message;
+  res.status(200).json({reponse:`msg recebida: ${message}`});
+});
+
+const port =3000;
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}`);
 });

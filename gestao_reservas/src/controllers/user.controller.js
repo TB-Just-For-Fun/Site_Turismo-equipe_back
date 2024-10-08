@@ -80,7 +80,6 @@ reservaController.create = async (req, res) => {
     }
     try {
         const reservaInstance = await Reserva.create({
-            IDReserva,
             dateInicio: moment. tz (dateInicio, 'Angola/Huíla_lubango') . toDate (),
             dateFim: moment. tz (dateFim, 'Angola/Huíla_lubango') . toDate (),
             NumeroAdulto,
@@ -97,7 +96,6 @@ reservaController.create = async (req, res) => {
         return res.status(201).send({
             message: "Reserva criada com sucesso",
             reserva: {
-                IDReserva: reservaInstance. IDReserva,
                 dateInicio: reservaInstance.dateInicio.toISOString().split('T')[0],
                 dateFim: reservaInstance.dateFim.toISOString().split('T')[0],
                 NumeroAdulto: reservaInstance.NumeroAdulto,
@@ -126,7 +124,6 @@ reservaController.put = async (req, res) => {
 
     try {
         const reserva = await Reserva.findByIdAndUpdate(id, {
-            IDReserva,
             dateInicio: moment.tz(dateInicio, 'Angola/Huíla_lubango').toDate(),
             dateFim: moment.tz(dateFim, 'Angola/Huíla_lubango').toDate(),
             NumeroAdulto,
