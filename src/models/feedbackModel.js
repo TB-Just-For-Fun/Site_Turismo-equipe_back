@@ -1,4 +1,4 @@
-const pool = require('../../feedback/src/config/db');
+const pool = require('../Config/db');
 
 const Feedback = {
     create: async (userId, rating, comment) => {

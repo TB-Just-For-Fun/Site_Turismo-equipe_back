@@ -1,4 +1,4 @@
-const { Feedback } = require('../../feedback/src/config/db'); // Importar o modelo de feedback
+const { Feedback } = require('../Config/db'); // Importar o modelo de feedback
 
 // Criação de um novo feedback
 const createFeedback = async (req, res, next) => {

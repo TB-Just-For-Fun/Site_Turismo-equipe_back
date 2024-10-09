@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const bodyParser = require('body-parser');
 const app = express();
 
 require("dotenv").config();
@@ -12,10 +13,21 @@ const packRoute = require("./src/routes/pack.route");
 const notificacoesRoutes = require('./src/routes/notificacoes.route');
 const reservaRoute = require('./src/routes/reserva.route');
 const userRoute = require('./src/routes/user.route');
+const feedbackRoutes = require('./src/routes/feedbackRoutes');
 const SMTP_CONFIG = require("./src/Config/Smtp")
 
+// Middleware para aumentar o timeout
+app.use((req, res, next) => {
+    res.setTimeout(115000, () => {
+        console.log('Request has timed out.');
+        res.status(408).send('Request timed out');
+    });
+    next();
+});
 
 app.use(express.json());
+//bodyparser
+app.use(bodyParser.json());
 
 //usando o cors
 app.use(cors());
@@ -41,6 +53,8 @@ app.use("/api_reservas", reservaRoute);
 app.use("/api_pacotes", packRoute);
     //rota de usuarios
 app.use("/api_usuarios", userRoute);
+    //rota de feedback
+app.use('/api/feedback', feedbackRoutes);
 
 
 app.listen(port, () => {

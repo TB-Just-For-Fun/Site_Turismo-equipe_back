@@ -7,9 +7,12 @@ exports.create = async (req, res) => {
         const { name } = req.body;
 
         const file = req.file;
+        
+        const descricao = req.body;
 
         const picture = new Picture({
             name,
+            descricao,
             src: file.path
         });
 
