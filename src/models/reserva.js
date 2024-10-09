@@ -1,11 +1,7 @@
 const mongoose = require('mongoose');
 
 const reservaSchema = new mongoose.Schema({
-  IDReserva: {
-    type: String,
-    required: true,
-    unique: true,
-  },
+
   dateInicio: {
     type: Date,
     required: true,

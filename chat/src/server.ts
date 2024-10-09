@@ -24,7 +24,7 @@ class App {
     
     private middlewares(): void {
         this.app.use(cors({
-            origin: ['http://localhost:3000', 'http://192.168.43.54:8080', 'http://192.168.43.40:3000'],
+            origin: ['http://localhost:3000', 'http://192.168.193.251:3000', 'http://192.168.193.211:3000'],
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization'],
             credentials: true
@@ -47,4 +47,4 @@ class App {
 }
 connectDatabase();
 const app = new App();
-app.listen(8080);
+app.listen(3000);
