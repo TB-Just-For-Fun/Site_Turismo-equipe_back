@@ -4,7 +4,7 @@ const Schema = mongoose.Schema
 
 const pictureSchema = new Schema({
     name: { type: String, require: true, unique: true },
-    descricao: { type: String, require: true, unique: true },
+    description: { type: String, require: true, unique: true },
     src: { type: String, require: true }
 })
 

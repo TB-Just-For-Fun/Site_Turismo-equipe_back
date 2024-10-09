@@ -5,14 +5,13 @@ const fs = require("fs");
 exports.create = async (req, res) => {
     try {
         const { name } = req.body;
+        const { description } = req.body;
 
         const file = req.file;
-        
-        const descricao = req.body;
 
         const picture = new Picture({
             name,
-            descricao,
+            description,
             src: file.path
         });
 
