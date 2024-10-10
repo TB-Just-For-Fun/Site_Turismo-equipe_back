@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const userModel = require('../models/user.models');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
-const SMTP_CONFIG = require("../config/smtp");
+const SMTP_CONFIG = require("../config/user.smtp");
 
 const userController = {}; // Objeto para armazenar funções do controlador de usuários
 
