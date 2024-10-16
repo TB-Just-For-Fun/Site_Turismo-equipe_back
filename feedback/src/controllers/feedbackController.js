@@ -1,16 +1,14 @@
-const { Feedback } = require('../config/db'); // Importar o modelo de feedback
+const Feedback = require('../models/feedbackModel'); 
 
-// Criação de um novo feedback
 const createFeedback = async (req, res, next) => {
     try {
         const { user_id, rating, comment } = req.body;
 
-        
         if (!user_id || !rating || !comment) {
             return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
         }
 
-        // Criando o novo feedback
+
         const newFeedback = new Feedback({ user_id, rating, comment });
         await newFeedback.save();
 
@@ -24,10 +22,9 @@ const createFeedback = async (req, res, next) => {
     }
 };
 
-// Obter todos os feedbacks
 const getAllFeedback = async (req, res, next) => {
     try {
-        const feedbacks = await Feedback.find(); // Busca todos os feedbacks
+        const feedbacks = await Feedback.find(); 
 
         res.status(200).json({
             message: 'Feedbacks obtidos com sucesso',

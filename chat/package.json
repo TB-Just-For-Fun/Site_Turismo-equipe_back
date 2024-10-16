@@ -23,6 +23,7 @@
     "socket.io": "^4.8.0"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/express": "^4.17.21",
     "@types/mongoose": "^5.11.96",
     "@types/socket.io": "^3.0.1",

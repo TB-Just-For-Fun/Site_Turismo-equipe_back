@@ -34,7 +34,7 @@ export const createChat = (req: Request, res: Response) => {
 };
 
 export const replyChat = (req: Request, res: Response) => {
-    const chatId = req.params.id;
+    const chatId = req.params.id.toString(); // Certifique-se que o ID é uma string
     const { userMessage } = req.body;
 
     if (conversations[chatId]) {
@@ -48,7 +48,6 @@ export const replyChat = (req: Request, res: Response) => {
         res.status(404).send({ error: "Conversa não encontrada." });
     }
 };
-
 export const getChat = (req: Request, res: Response) => {
     const chatId = req.params.id;
     const conversation = conversations[chatId];

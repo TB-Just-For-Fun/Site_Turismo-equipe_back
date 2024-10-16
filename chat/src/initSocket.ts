@@ -4,23 +4,30 @@ import http from 'http';
 export const initSocket = (server: http.Server): Server => {
     const io = new Server(server, {
         cors: {
-            origin: ['http://localhost:3000', 'http://192.168.193.251:3000', 'http://192.168.193.211:3000'],
+            origin: ['http://localhost:3001'],
             methods: ['GET', 'POST'],
-            credentials: true
+            credentials: true 
         }
     });
 
     io.on('connection', (socket) => {
         console.log(`Cliente conectado: ${socket.id}`);
 
-        // Escutar mensagens enviadas pelo cliente
+        // Evento de envio de mensagem
         socket.on('sendMessage', (message) => {
             console.log('Mensagem recebida do cliente:', message);
-            io.emit('receiveMessage', { text: `Usuário ${socket.id} disse: ${message.text}` });
+            
+            // Aqui você pode adicionar a lógica para processar a mensagem recebida
+            // e retornar uma resposta ao cliente
+            const serverResponse = `Resposta do servidor: ${message.text}`;
+            
+            // Emitindo a resposta de volta para o cliente
+            socket.emit('receiveMessage', { text: serverResponse });
         });
 
+        // Evento de desconexão
         socket.on('disconnect', () => {
-            console.log('Cliente desconectado:', socket.id);
+            console.log(`Cliente desconectado: ${socket.id}`);
         });
     });
 
