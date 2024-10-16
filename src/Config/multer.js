@@ -1,17 +1,18 @@
 const multer = require("multer");
-
 const path = require("path");
+const firebase = require('firebase/app');
+const { getStorage, ref, uploadBytesResumable } = require('firebase/storage');
+const storageConfig = require('./firebase.config'); // Importando a configuração do Firebase
 
-//objecto que contém o destino e a função para nomear os arquivos enviados
-const storage = multer.diskStorage({
-    destination: function (res, file, cb) {
-        cb(null, "upload/")
-    },
-    filename: function (res, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname))
+const upload = multer({
+    storage: multer.memoryStorage(), // Armazena o arquivo em memória temporariamente
+    fileFilter: (req, file, cb) => {
+        // Adicione filtros para os tipos de arquivos permitidos
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/i)) {
+            return cb(new Error('Only image files are allowed!'), false);
+        }
+        cb(null, true);
     }
 });
-
-const upload = multer({ storage });
 
 module.exports = upload;
