@@ -24,7 +24,7 @@ class App {
     
     private middlewares(): void {
         this.app.use(cors({
-            origin: ['http://localhost:3001', 'http://192.168.193.251:3001', 'http://192.168.100.26:3000'],
+            origin: ['http://localhost:3001', 'http://192.168.43.54:3001', 'http://192.168.43.40:3000'],
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization'],
             credentials: true
