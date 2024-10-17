@@ -20,3 +20,4 @@ export const initSocket = (server) => {
     });
     return io;
 };
+

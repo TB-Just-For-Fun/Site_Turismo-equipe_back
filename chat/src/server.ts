@@ -24,13 +24,16 @@ class App {
     
     private middlewares(): void {
         this.app.use(cors({
-            origin: ['http://localhost:3000', 'http://192.168.193.251:3000', 'http://192.168.193.211:3000'],
+            origin: ['http://localhost:3001', 'http://192.168.193.251:3001', 'http://192.168.100.26:3000'],
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization'],
             credentials: true
         }));
-
+// Garante que o CORS esteja corretamente configurado
+        this.app.options('*', cors()); // Lida com requisições preflight
         this.app.use(express.json());
+
+        
     }
 
    
@@ -47,4 +50,6 @@ class App {
 }
 connectDatabase();
 const app = new App();
-app.listen(3000);
+app.listen(3001);
+
+
