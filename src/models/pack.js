@@ -24,6 +24,14 @@ const pack = mongoose.Schema({
     obs:{
         type: String,
         require: true
+    },
+    CreatedAt:{
+        type: Date,
+        default: Date.now
+    },
+    UpdatadedAt:{
+        type: Date,
+        default: Date.now
     }
 });
 
