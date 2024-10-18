@@ -22,7 +22,7 @@ const {
 route.post("/login", login);
 
 // Rotas públicas
-route.post("/", create); 
+route.post("/createUser", create); 
 
 // Rota para criação do primeiro admin (sem necessidade de estar logado)
 route.post('/createFirstAdmin', verificarAdminSupremoExistente, createFirstAdmin);
@@ -36,13 +36,13 @@ route.use(authMiddleware.verifyToken);
 // Rotas protegidas que precisam de autenticação
 route.get("/", get);              
 route.get("/:id", getById); 
-route.get("/email", getByEmail);     
+route.get("/buscar/get", getByEmail);     
 route.patch("/:id", patch);       
-route.patch("/email", patchByEmail); 
+route.patch("/editar/get", patchByEmail); 
 route.put("/:id", put);           
-route.put("/email", putByEmail);  
+route.put("/editar_todas_infor/get", putByEmail);  
 route.delete("/:id", apagar);     
-route.delete("/email", apagarByEmail);
+route.delete("/deletar/get", apagarByEmail);
 
 // Rota de logout
 route.post('/logout', logout);     

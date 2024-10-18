@@ -4,8 +4,14 @@ const userModel = require('../models/user.models');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const SMTP_CONFIG = require("../config/user.smtp");
+const validator = require('validator');
+const InvalidToken = require('../models/invalidToken.model');
+const { validationResult } = require('express-validator');
 
-const userController = {}; // Objeto para armazenar funções do controlador de usuários
+
+
+
+const userController = {};
 
 userController.login = async (req, res) => {
     // Verifica se o corpo da requisição está sendo recebido corretamente
@@ -45,8 +51,17 @@ userController.login = async (req, res) => {
         };
         
         const token = generateToken(user);
-        // Retorna o token na resposta
-        return res.status(200).send({ message: 'Login bem-sucedido', token });
+
+        // Define o token como um cookie HTTP
+        res.cookie('token', token, {
+            httpOnly: true,     // Impede o acesso via JavaScript
+            secure: process.env.NODE_ENV === 'production', // Somente HTTPS em produção
+            sameSite: 'Strict', // Proteção contra CSRF
+            maxAge: 2 * 24 * 60 * 60 * 1000  // Define a duração do cookie (2 dias)
+        });
+
+        // Retorna a resposta de sucesso
+        return res.status(200).send({ message: 'Login bem-sucedido' });
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: "Erro no login", error });
@@ -54,10 +69,21 @@ userController.login = async (req, res) => {
 };
 
 
-
 // Função de logout
 userController.logout = async (req, res) => {
     try {
+        const token = req.cookies.token;
+        
+        if (!token) {
+            return res.status(400).send({ message: "Nenhum token encontrado para logout" });
+        }
+
+        // Invalida o token
+        await InvalidToken.create({ token });
+
+        // Limpa o cookie do token
+        res.clearCookie('token');
+
         return res.status(200).send({ message: "Logout realizado com sucesso!" });
     } catch (error) {
         console.error(error);
@@ -205,10 +231,8 @@ userController.getById = async (req, res) => {
 
 // Método getByEmail
 userController.getByEmail = async (req, res) => {
-    const { email } = req.params;
-
     try {
-        const usuario = await userModel.findOne({ email: email }); // Utilizando findOne para buscar pelo email
+        const usuario = await userModel.findOne(req.query); 
         if (!usuario) {
             return res.status(404).send({ message: "Usuário não encontrado" });
         }
@@ -287,28 +311,28 @@ async function enviarEmailConfirmacao(email, username) {
 
         // Corpo do email
         const emailBody = `
-            Olá ${username},
-
-            Seu cadastro foi realizado com sucesso!
-            
-            Volte agora à nossa página e faça login com as suas credenciais.
-
-            Atenciosamente,
-            Just For Fun
+            Estamos muito felizes em tê-lo conosco! Aqui, sua aventura começa. Explore destinos incríveis, descubra experiências inesquecíveis e faça memórias que durarão para sempre.\n\n
+            Seja você um viajante experiente ou alguém em busca de novas aventuras, temos algo especial para todos. Navegue pelo nosso portfólio de serviços, agende passeios emocionantes e entre em contato com nossa equipe para qualquer dúvida.\n\n
+            Prepare-se para explorar o mundo de forma divertida e única!\n\n
+            Boa viagem! 🧳✈️\n\n
+            Faça login agora, com suas credenciais:\n
+            <a href="https://www.seusite.com/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
         `;
 
         await transporter.sendMail({
             from: `"Just For Fun" <${SMTP_CONFIG.user}>`,
             to: email,
             subject: 'Cadastro realizado com sucesso!',
-            text: emailBody,
+            text: emailBody, // Usar apenas texto simples
+            html: emailBody.replace(/\n/g, '<br/>'), // Adicionando suporte para HTML
         });
 
         console.log(`Email de confirmação enviado para ${email}`);
     } catch (error) {
         console.error("Erro ao enviar o email de confirmação:", error);
     }
-};
+}
+
 
 
 // Método PUT para atualização completa pelo ID
@@ -352,30 +376,39 @@ userController.put = async (req, res) => {
 
 // Método PUT para atualização completa pelo Email
 userController.putByEmail = async (req, res) => {
-    const { email } = req.query;  // Email do usuário
-    const updateFields = req.body;
-    const { user } = req;  // Usuário logado (informações do token)
-
     try {
-        const usuarioAtual = await userModel.findOne({ email });
+        const { email } = req.query;  // Email do usuário a ser atualizado
+
+        // Verifica se o email é válido
+        if (!validator.isEmail(email)) {
+            return res.status(400).send({ message: "Email inválido" });
+        }
+
+        const usuarioAtual = await userModel.findOne({ email });  // Encontra o usuário pelo email
+        const updateFields = req.body;  // Campos a serem atualizados
+        const { user } = req;  // Usuário logado (informações do token)
+
         if (!usuarioAtual) {
             return res.status(404).send({ message: "Usuário não encontrado" });
         }
 
-        // Verifica os campos permitidos com base no papel do usuário logado
-        if (!temPermissaoParaAtualizar(user, updateFields, usuarioAtual)) {
+        // Verifica se o usuário logado está tentando atualizar seu próprio perfil
+        const isUpdatingSelf = user.email === usuarioAtual.email;
+
+        if (!temPermissaoParaAtualizar(user, updateFields, usuarioAtual, isUpdatingSelf)) {
             return res.status(403).send({ message: "Acesso negado. Você não pode atualizar este usuário." });
         }
 
-        // Criptografa a senha, se fornecida
         if (updateFields.password) {
             updateFields.password = await bcrypt.hash(updateFields.password, 10);
         }
 
-        // Atualiza o usuário
-        const usuarioAtualizado = await userModel.findByEmailAndUpdate(usuarioAtual.email, updateFields, { new: true });
+        const usuarioAtualizado = await userModel.findOneAndUpdate(
+            { email: usuarioAtual.email },
+            updateFields,
+            { new: true }
+        );
 
-        // Envia email de promoção, se aplicável
         await verificarEEnviarEmailPromocao(usuarioAtualizado, usuarioAtual);
 
         return res.status(200).send({
@@ -388,6 +421,26 @@ userController.putByEmail = async (req, res) => {
         return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
     }
 };
+
+// Modifique a função de permissão para considerar a atualização
+function temPermissaoParaAtualizar(user, updateFields, usuarioAtual, isUpdatingSelf) {
+    // Se o usuário estiver atualizando a si mesmo, permitir atualização de todos os campos, exceto o email
+    if (isUpdatingSelf) {
+        if (updateFields.email) {
+            return false; // Não permite alteração de email
+        }
+        return true; // Permite atualização de outros campos
+    }
+
+    // Lógica adicional para outras permissões (por exemplo, admin)
+    // Exemplo: 
+    if (user.role === 'admin') {
+        return true; // Admin pode atualizar qualquer usuário
+    }
+
+    return false; // Acesso negado para outros casos
+}
+
 
 // Método PATCH para atualização parcial de um usuário
 userController.patch = async (req, res) => {
@@ -459,84 +512,86 @@ userController.patchByEmail = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email } = req.query; // Email do usuário a ser atualizado
-    const updateFields = req.body; // Campos a serem atualizados
-    const { user } = req; // Usuário logado
-
     try {
-        // Busca o usuário pelo email
-        const usuarioAtual = await userModel.findOne({ email: email }); 
+        const { email } = req.query;  // Email do usuário a ser atualizado
+        
+        // Verifica se o email é válido
+        if (!validator.isEmail(email)) {
+            return res.status(400).send({ message: "Email inválido" });
+        }
 
+        const updateFields = req.body;
+        const { user } = req;
+        const usuarioAtual = await userModel.findOne({ email });
 
         if (!usuarioAtual) {
             return res.status(404).send({ message: "Usuário não encontrado" });
         }
 
-        // Restringir a atualização com base no papel do usuário logado
-        if (user.role === 'cliente') {
-            if (user.email.toString() !== usuarioAtual.email.toString()) {
-                return res.status(403).send({ message: "Acesso negado. Você só pode atualizar seus próprios dados." });
-            }
-        } else if (user.role === 'administrador') {
-            if (usuarioAtual.role === 'administrador_supremo') {
-                return res.status(403).send({ message: "Acesso negado. Você não pode atualizar o administrador supremo." });
-            }
+        if (user.role === 'cliente' && user.email !== usuarioAtual.email) {
+            return res.status(403).send({ message: "Acesso negado. Você só pode atualizar seus próprios dados." });
         }
 
-        // Campos permitidos para atualização
+        if (user.role === 'administrador' && usuarioAtual.role === 'administrador_supremo') {
+            return res.status(403).send({ message: "Acesso negado. Você não pode atualizar o administrador supremo." });
+        }
+
         const camposPermitidos = {
             cliente: ['username', 'password', 'numero'],
             administrador: ['username', 'password', 'numero', 'email'],
             administrador_supremo: ['username', 'password', 'numero', 'email', 'role'],
         };
 
-        // Verifica os campos que estão sendo atualizados
         for (const campo in updateFields) {
             if (!camposPermitidos[user.role].includes(campo)) {
                 return res.status(403).send({ message: `Acesso negado. Você não pode atualizar o campo "${campo}".` });
             }
 
-            // Administradores não podem alterar o email de outros administradores
             if (campo === 'email' && user.role === 'administrador' && usuarioAtual.role === 'administrador') {
                 return res.status(403).send({ message: "Acesso negado. Administradores não podem alterar o email de outros administradores." });
             }
+        }
 
-            // Criptografa a senha, se fornecida
-            if (campo === 'password') {
-                updateFields.password = await bcrypt.hash(updateFields.password, 10)
-                    .catch(err => {
-                        console.error('Erro ao criptografar a senha:', err);
-                        return res.status(500).send({ message: 'Erro ao atualizar o usuário' });
-                    });
+        let senhaAlterada = false; // Para rastrear se a senha foi alterada
+
+        if (updateFields.password) {
+            try {
+                updateFields.password = await bcrypt.hash(updateFields.password, 10);
+                senhaAlterada = true; // Marcar que a senha foi alterada
+            } catch (err) {
+                console.error('Erro ao criptografar a senha:', err);
+                return res.status(500).send({ message: 'Erro ao atualizar o usuário' });
             }
         }
 
-        // Atualiza o usuário
         const usuarioAtualizado = await userModel.findOneAndUpdate(
-            { email: email }, // Use email aqui, não _id
+            { email },
             updateFields,
-            { new: true } // Retornar o documento atualizado
+            { new: true }
         );
-        
+
+        const usuarioSemSenha = usuarioAtualizado.toObject();
+        delete usuarioSemSenha.password;
+
+        // Verifica se houve promoção para administrador
+        if (usuarioAtualizado.role === 'administrador' && usuarioAtual.role !== 'administrador') {
+            await enviarEmailPromocao(usuarioAtualizado.email);
+        }
+
+        // Envia email de confirmação se a senha foi alterada
+        if (senhaAlterada) {
+            await enviarEmailAlteracaoSenha(usuarioAtualizado.email); // Corrigido para enviar o email ao novo email
+        }
 
         return res.status(200).send({
             message: "Usuário atualizado com sucesso",
-            usuario: usuarioAtualizado.toObject({ transform: (doc, ret) => { delete ret.password; return ret; } })
+            usuario: usuarioSemSenha
         });
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
     }
 };
-
-
-
-// Função auxiliar para verificar e enviar email de promoção
-async function verificarEEnviarEmailPromocao(usuarioAtualizado, usuarioAtual) {
-    if (usuarioAtualizado.role === 'administrador' && usuarioAtual.role !== 'administrador') {
-        await enviarEmailPromocao(usuarioAtualizado.email);
-    }
-}
 
 // Função auxiliar para enviar o email de promoção
 async function enviarEmailPromocao(email) {
@@ -554,16 +609,64 @@ async function enviarEmailPromocao(email) {
             },
         });
 
+        // Corpo do email
+        const emailBody = `
+            Estamos muito felizes em anunciar que você foi promovido a Administrador no Just For Fun! Sua dedicação e paixão pelo que fazemos não passaram despercebidas, e acreditamos que você tem o que é necessário para desempenhar este novo papel com excelência.\n\n
+            Como Administrador, você terá novas responsabilidades e a oportunidade de impactar ainda mais nossa comunidade de viajantes. A sua experiência será fundamental para aprimorar nossos serviços e garantir que nossos clientes tenham experiências memoráveis.\n\n
+            Sinta-se à vontade para compartilhar suas ideias e sugestões para o nosso crescimento. Estamos aqui para apoiá-lo nesta nova jornada!\n\n
+            Vamos juntos fazer do Just For Fun um lugar ainda mais incrível!\n\n
+            👏 Parabéns novamente! 👏\n\n
+            Faça login agora, com suas credenciais:\n
+            <a href="https://www.seusite.com/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
+        `;
+
         await transporter.sendMail({
             from: `"Just For Fun" <${SMTP_CONFIG.user}>`,
             to: email,
             subject: 'Parabéns! Você foi promovido a administrador',
-            text: 'Seu papel no sistema foi atualizado para administrador. Parabéns pela promoção!',
+            text: emailBody, // Usar apenas texto simples
+            html: emailBody.replace(/\n/g, '<br/>'), // Adicionando suporte para HTML
         });
 
         console.log(`Email de promoção enviado para ${email}`);
     } catch (error) {
         console.error("Erro ao enviar o email de promoção:", error);
+    }
+}
+
+// Função auxiliar para enviar o email de alteração de senha
+async function enviarEmailAlteracaoSenha(email) {
+    try {
+        const transporter = nodemailer.createTransport({
+            host: SMTP_CONFIG.host,
+            port: SMTP_CONFIG.port,
+            secure: false,
+            auth: {
+                user: SMTP_CONFIG.user,
+                pass: SMTP_CONFIG.pass,
+            },
+            tls: {
+                rejectUnauthorized: process.env.NODE_ENV !== 'production' ? false : true,
+            },
+        });
+
+        // Corpo do email
+        const emailBody = `
+            A sua senha foi alterada com sucesso. Faça login agora com as suas novas credenciais:\n
+            <a href="https://www.seusite.com/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
+        `;
+
+        await transporter.sendMail({
+            from: `"Just For Fun" <${SMTP_CONFIG.user}>`,
+            to: email,
+            subject: 'A sua senha foi alterada',
+            text: emailBody, // Usar apenas texto simples
+            html: emailBody.replace(/\n/g, '<br/>'), // Adicionando suporte para HTML
+        });
+
+        console.log(`Email de alteração de senha enviado para ${email}`);
+    } catch (error) {
+        console.error("Erro ao enviar o email de alteração de senha:", error);
     }
 }
 
@@ -626,57 +729,57 @@ userController.apagar = async (req, res) => {
 
 // Método DELETE para deletar um usuário por email
 userController.apagarByEmail = async (req, res) => {
-    const { email } = req.params;
-    const { role, email: userEmail } = req.user;
-
-    if (!mongoose.Types.ObjectEmail.isValid(email)) {
-        return res.status(400).send({ message: "Email inválido" });
-    }
-
     try {
-        const usuarioDeletado = await userModel.findByEmail(email);
+        const { email } = req.query; 
+
+        // Verificação de email válido
+        if (!validator.isEmail(email)) {
+            return res.status(400).send({ message: "Email inválido" });
+        }
+
+        const { role, email: userEmail } = req.user;  // Pega o papel e o email do usuário logado
+        // Busca o usuário pelo email
+        const usuarioDeletado = await userModel.findOne({ email });
+        
         if (!usuarioDeletado) {
             return res.status(404).send({ message: "Usuário não encontrado" });
         }
 
-        // Admin Supremo pode deletar qualquer conta, incluindo a própria
+        // Admin Supremo pode deletar qualquer conta
         if (role === 'administrador_supremo') {
-            await userModel.findByEmailAndDelete(email);
+            await userModel.findOneAndDelete({ email });
             return res.status(200).send({ message: "Usuário deletado com sucesso" });
         }
 
-        // Administrador (que não é supremo)
+        // Administrador (não supremo) só pode deletar sua própria conta ou contas de clientes
         if (role === 'administrador') {
-            // Verifica se o admin está tentando deletar outra conta de admin
-            if (usuarioDeletado.role === 'administrador' && usuarioDeletado.email.toString() !== userEmail.toString()) {
-                return res.status(403).send({ message: "Acesso negado. Apenas o administrador supremo pode deletar contas de outros administradores." });
+            if (usuarioDeletado.role === 'administrador' && usuarioDeletado.email !== userEmail) {
+                return res.status(403).send({ message: "Acesso negado. Apenas o administrador supremo pode deletar outros administradores." });
             }
 
-            // Admin pode deletar a própria conta ou a conta de clientes
-            if (usuarioDeletado.email.toString() === userEmail.toString() || usuarioDeletado.role === 'cliente') {
-                await userModel.findByEmailAndDelete(id);
+            if (usuarioDeletado.email === userEmail || usuarioDeletado.role === 'cliente') {
+                await userModel.findOneAndDelete({ email });
                 return res.status(200).send({ message: "Usuário deletado com sucesso" });
             }
 
-            return res.status(403).send({ message: "Acesso negado. Você não pode deletar esse usuário." });
+            return res.status(403).send({ message: "Acesso negado. Você não pode deletar este usuário." });
         }
 
         // Cliente pode deletar apenas a própria conta
-        if (role === 'cliente') {
-            if (usuarioDeletado.email.toString() === userEmail.toString()) {
-                await userModel.findByEmailAndDelete(email);
-                return res.status(200).send({ message: "Conta deletada com sucesso" });
-            }
-
-            return res.status(403).send({ message: "Acesso negado. Você só pode deletar a sua própria conta." });
+        if (role === 'cliente' && usuarioDeletado.email === userEmail) {
+            await userModel.findOneAndDelete({ email });
+            return res.status(200).send({ message: "Conta deletada com sucesso" });
         }
 
-        return res.status(403).send({ message: "Acesso negado." });
+        // Caso não seja permitido
+        return res.status(403).send({ message: "Acesso negado. Você não tem permissão para realizar esta operação" });
+
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: "Erro ao deletar usuário", error });
     }
 };
+
 
 
 module.exports = userController;
