@@ -9,7 +9,12 @@ packController.get = async (req, res) => {
 
         const pacotes = await packModel.find();
 
-        return res.status(200).send(pacotes);
+        if(pacotes.length <1){
+            res.status(200).send("Não há pacotes disponíveis!")
+        }
+        else{
+            return res.status(200).send(pacotes);
+        }
     }
     catch (error) {
         console.log(error);
