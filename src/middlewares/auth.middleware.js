@@ -1,23 +1,29 @@
 const jwt = require('jsonwebtoken');
 const UserModel = require('../models/user.models');
+const InvalidToken = require('../models/invalidToken.model'); // Importa o modelo de tokens inválidos
 
 const authMiddleware = {};
 
 // Middleware para verificar o token JWT
 authMiddleware.verifyToken = async (req, res, next) => {
-    const authHeader = req.header("Authorization");
+    console.log(req.cookies); // Verifica se o token está presente nos cookies
+    const token = req.cookies.token; // Obtém o token dos cookies
 
-    // Verifica se o cabeçalho Authorization está presente
-    if (!authHeader) {
-        return res.status(401).send({ message: "Cabeçalho de autorização não fornecido" });
+    // Verifica se o token está presente
+    if (!token) {
+        return res.status(401).send({ message: "Cabeçalho de autorização ou token ausente" });
     }
 
-    // Extrai o token removendo o prefixo "Bearer "
-    const token = authHeader.replace("Bearer ", "");
-
     try {
+        // Verifica se o token está na lista de tokens inválidos
+        const isInvalid = await InvalidToken.findOne({ token });
+        if (isInvalid) {
+            return res.status(401).send({ message: "Sessão expirada. Token inválido." });
+        }
+
         // Verifica e decodifica o token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
         // Verifica se o ID está presente no payload do token
         if (!decoded.id) {
             return res.status(401).send({ message: "Token inválido: ID do usuário não encontrado." });

@@ -1,10 +1,11 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser'); // Importa o cookie-parser
 const app = express();
 
 require("dotenv").config();
-require("./src/database/db")
+require("./src/database/db");
 
 const port = process.env.PORT || 3000;
 
@@ -14,7 +15,7 @@ const notificacoesRoutes = require('./src/routes/notificacoes.route');
 const reservaRoute = require('./src/routes/reserva.route');
 const userRoute = require('./src/routes/user.route');
 const feedbackRoutes = require('./src/routes/feedbackRoutes');
-const SMTP_CONFIG = require("./src/Config/Smtp")
+const SMTP_CONFIG = require("./src/Config/Smtp");
 
 // Middleware para aumentar o timeout
 app.use((req, res, next) => {
@@ -32,12 +33,15 @@ app.use(bodyParser.json());
 //usando o cors
 app.use(cors());
 
+//adiciona o cookie-parser para habilitar a leitura dos cookies
+app.use(cookieParser()); // Aqui está o cookie-parser
+
 //adicionando o header ao servidor
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
-    next()
-})
+    next();
+});
 
 //rotas
     //rota principal
@@ -56,7 +60,6 @@ app.use("/api_usuarios", userRoute);
     //rota de feedback
 app.use('/api/feedback', feedbackRoutes);
 
-
 app.listen(port, () => {
-    console.log(`O servidor está rodando na porta ${port}!`)
+    console.log(`O servidor está rodando na porta ${port}!`);
 });
