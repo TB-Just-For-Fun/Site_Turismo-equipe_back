@@ -1,61 +1,38 @@
 const mongoose = require('mongoose');
-const Reserva = require('../models/reserva'); 
+const Reserva = require('../models/user'); 
+const moment = require('moment-timezone');
+
 const reservaController = {};
 
 
-const moment = require('moment-timezone');
-const timezone = moment.tz.guess();
-console.log(`Fuso horário detectado: ${timezone}`);
-const dateInicio = moment.tz('2024-10-01 13:30', 'Africa/Luanda').format();
-const dateFim = moment.tz('2024-10-05 09:00', 'Africa/Luanda').format();
+reservaController.create = async (req, res) => {
+    const { nome, email, dataInicio, dataFim, numAdultos, numCriancas } = req.body;
 
-console.log(`Início: ${dateInicio}, Fim: ${dateFim}`);
+    // Verificar se todos os campos estão preenchidos
+    if (!nome || !email || !dataInicio || !dataFim || numAdultos === undefined || numCriancas === undefined) {
+        return res.status(400).send({ message: "Todos os campos são obrigatórios!" });
+    }
 
-
-
-const userController = {};
-
-reservaController.getDisponibilidade = async (req, res) => {
-    const { id } = req.params; 
+    const IDReserva = 'R' + Math.random().toString(36).substring(2, 8).toUpperCase();
     try {
-        const reserva = await Reserva.findById(id); 
-        if (!reserva) {
-            return res.status(404).json({ message: 'A reserva não foi encontrada. Por favor, verifique o ID e tente novamente.' });
-        }
-        if (reserva.disponibilidade) {
-            return res.status(200).json({
-                message: 'A reserva está disponível.',
-                disponibilidade: reserva.disponibilidade
-            });
-        } else {
-            return res.status(404).json({ message: 'A reserva foi encontrada, mas não há disponibilidade no momento.' });
-        }
+        const reservaInstance = await Reserva.create({
+            IDReserva,
+            nome,
+            email,
+            dataInicio: moment.tz(dataInicio, 'Africa/Luanda').toDate(),
+            dataFim: moment.tz(dataFim, 'Africa/Luanda').toDate(),
+            numAdultos,
+            numCriancas,
+        });
+        return res.status(201).send({ message: "Reserva criada com sucesso", reserva: reservaInstance });
     } catch (error) {
-        return res.status(500).json({ message: "Erro ao buscar a reserva ou a disponibilidade", error: error.message });
+        console.error('Erro ao criar a reserva:', error);  // Log detalhado do erro
+        return res.status(500).send({ message: "Erro ao criar a reserva", error: error.message });
     }
 };
-reservaController.obterCalendario = async (req, res) => {
-  try {
-      const reservas = await Reserva.find();
-      const eventos = reservas.map(reserva => ({
-          title: `Reserva ${reserva.IDReserva}`,
-          start: reserva.dateInicio,
-          end: reserva.dateFim,
-      })); 
-      if (eventos.length > 0) {
-          res.json({ 
-              message: 'Calendário de reservas obtido com sucesso.',
-              eventos 
-          });
-      } else {
-          res.json({ 
-              message: 'Não há reservas no calendário.' 
-          });
-      }
-  } catch (error) {
-      res.status(500).json({ message: "Erro ao obter o calendário", error: error.message });
-  }
-};
+
+
+
 reservaController.getReservaById = async (req, res) => {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -72,49 +49,28 @@ reservaController.getReservaById = async (req, res) => {
         return res.status(500).send({ message: "Erro ao buscar a reserva", error });
     }
 };
-const  IDReserva = 'R' + Math.random().toString(36).substring(2, 8).toUpperCase();
-reservaController.create = async (req, res) => {
-    const { dateInicio, dateFim, NumeroAdulto, NumeroCrianca, ValorTotal, StatusReserva, disponibilidade } = req.body;
-    if (  !dateInicio || !dateFim || NumeroAdulto === undefined || NumeroCrianca === undefined || !ValorTotal || !StatusReserva || disponibilidade === undefined) {
-        return res.status(400).send({ message: "Todos os campos são obrigatórios!" });
-    }
+
+
+reservaController.obterCalendario = async (req, res) => {
     try {
-        const reservaInstance = await Reserva.create({
-            dateInicio: moment. tz (dateInicio, 'Angola/Huíla_lubango') . toDate (),
-            dateFim: moment. tz (dateFim, 'Angola/Huíla_lubango') . toDate (),
-            NumeroAdulto,
-            NumeroCrianca,
-            ValorTotal,
-            StatusReserva,
-            disponibilidade,
-        });
-        const eventoCalendario = {
-            title: `Reserva ${reservaInstance.IDReserva}`,
-            start: reservaInstance.dateInicio.toISOString().split('T')[0],
-            end: reservaInstance.dateFim.toISOString().split('T')[0],
-        };
-        return res.status(201).send({
-            message: "Reserva criada com sucesso",
-            reserva: {
-                dateInicio: reservaInstance.dateInicio.toISOString().split('T')[0],
-                dateFim: reservaInstance.dateFim.toISOString().split('T')[0],
-                NumeroAdulto: reservaInstance.NumeroAdulto,
-                NumeroCrianca: reservaInstance.NumeroCrianca,
-                ValorTotal: reservaInstance.ValorTotal,
-                StatusReserva: reservaInstance.StatusReserva,
-                disponibilidade: reservaInstance.disponibilidade 
-            },
-            calendario: eventoCalendario
-        });
+        const reservas = await Reserva.find();
+        const eventos = reservas.map(reserva => ({
+            title: `Reserva ${reserva.IDReserva}`,
+            start: reserva.dataInicio,
+            end: reserva.dataFim,
+        }));
+        return res.json({ message: 'Calendário de reservas obtido com sucesso.', eventos });
     } catch (error) {
-        console.error('Erro ao criar a reserva:', error);
-        return res.status(500).send({ message: "Erro ao criar a reserva", error });
+        return res.status(500).json({ message: "Erro ao obter o calendário", error: error.message });
     }
 };
+
+
 reservaController.put = async (req, res) => {
     const { id } = req.params;
-    const {dateInicio, dateFim, NumeroAdulto, NumeroCrianca, ValorTotal, StatusReserva } = req.body;
-    if (!dateInicio || !dateFim || !NumeroAdulto || !NumeroCrianca || !ValorTotal || !StatusReserva) {
+    const { dataInicio, dataFim, numAdultos, numCriancas } = req.body;
+
+    if (!dataInicio || !dataFim || !numAdultos || !numCriancas) {
         return res.status(400).send({ message: "Todos os campos são obrigatórios!" });
     }
 
@@ -124,27 +80,24 @@ reservaController.put = async (req, res) => {
 
     try {
         const reserva = await Reserva.findByIdAndUpdate(id, {
-            dateInicio: moment.tz(dateInicio, 'Angola/Huíla_lubango').toDate(),
-            dateFim: moment.tz(dateFim, 'Angola/Huíla_lubango').toDate(),
-            NumeroAdulto,
-            NumeroCrianca,
-            ValorTotal,
-            StatusReserva,
+            dataInicio: moment.tz(dataInicio, 'Africa/Luanda').toDate(),
+            dataFim: moment.tz(dataFim, 'Africa/Luanda').toDate(),
+            numAdultos,
+            numCriancas,
         }, { new: true });
 
         if (!reserva) {
             return res.status(404).send({ message: "Reserva não encontrada!" });
         }
 
-        return res.status(200).send({
-            message: "Reserva atualizada com sucesso",
-            reserva,
-        });
+        return res.status(200).send({ message: "Reserva atualizada com sucesso", reserva });
     } catch (error) {
         console.error('Erro ao atualizar a reserva:', error);
         return res.status(500).send({ message: "Erro ao atualizar a reserva", error });
     }
 };
+
+
 reservaController.apagar = async (req, res) => {
     const { id } = req.params;
 
@@ -154,7 +107,6 @@ reservaController.apagar = async (req, res) => {
 
     try {
         const reserva = await Reserva.findByIdAndDelete(id);
-
         if (!reserva) {
             return res.status(404).send({ message: "Reserva não encontrada!" });
         }
@@ -164,4 +116,5 @@ reservaController.apagar = async (req, res) => {
         return res.status(500).send({ message: "Erro ao remover a reserva", error });
     }
 };
+
 module.exports = reservaController;

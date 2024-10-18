@@ -1,42 +1,36 @@
 const mongoose = require('mongoose');
 
-const reservaSchema = new mongoose.Schema({
+const ReservaSchema = new mongoose.Schema({
+    IDReserva: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    nome: {
+        type: String,
+        required: true,
+    },
+    email: {
+        type: String,
+        required: true,
+    },
+    dataInicio: {
+        type: Date,
+        required: true,
+    },
+    dataFim: {
+        type: Date,
+        required: true,
+    },
+    numAdultos: {
+        type: Number,
+        required: true,
+    },
+    numCriancas: {
+        type: Number,
+        required: true,
+    }
+});
 
-  dateInicio: {
-    type: Date,
-    required: true,
-  },
-  dateFim: {
-    type: Date,
-    required: true,
-  },
-  disponibilidade: {
-    type: Boolean,
-    required: true,
-    default: true,
-  },
-  NumeroAdulto: {
-    type: Number,
-    required: true,
-    min: 1,
-  },
-  NumeroCrianca: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  ValorTotal: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  StatusReserva: {
-    type: String,
-    required: true,
-  }
-}, { timestamps: false });
-
-
-const Reserva = mongoose.model('Reserva', reservaSchema);
-module.exports =  Reserva ;
-module.exports = mongoose.model("reserva", reservaSchema,'api_reservas' )
+const Reserva = mongoose.model('Reserva', ReservaSchema);
+module.exports = Reserva;

@@ -1,17 +1,22 @@
-const pool = require('../Config/db');
+const mongoose = require('mongoose');
 
-const Feedback = {
-    create: async (userId, rating, comment) => {
-        const result = await pool.query(
-            'INSERT INTO feedback (user_id, rating, comment) VALUES ($1, $2, $3) RETURNING *',
-            [userId, rating, comment]
-        );
-        return result.rows[0];
+const feedbackSchema = new mongoose.Schema({
+    user_id: {
+        type: String,
+        required: true,
     },
-    getAll: async () => {
-        const result = await pool.query('SELECT * FROM feedback');
-        return result.rows;
+    rating: {
+        type: Number,
+        required: true,
+    },
+    comment: {
+        type: String,
+        required: true,
     }
-};
+}, {
+    timestamps: true // Isso vai adicionar 'createdAt' e 'updatedAt' automaticamente
+});
+
+const Feedback = mongoose.model('Feedback', feedbackSchema);
 
 module.exports = Feedback;
