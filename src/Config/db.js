@@ -1,16 +1,14 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
+require('dotenv').config(); 
 
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('Conectado ao MongoDB'))
-    .catch(err => console.error('Erro ao conectar ao MongoDB:', err));
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI); 
+        console.log('Conectado ao MongoDB');
+    } catch (error) {
+        console.error('Erro ao conectar ao MongoDB:', error);
+        process.exit(1); 
+    }
+};
 
-const feedbackSchema = new mongoose.Schema({
-    user_id: Number,
-    rating: Number,
-    comment: String
-});
-
-const Feedback = mongoose.model('Feedback', feedbackSchema);
-
-module.exports = { mongoose, Feedback };
+module.exports = connectDB;

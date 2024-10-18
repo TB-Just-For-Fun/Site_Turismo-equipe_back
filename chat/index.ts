@@ -33,7 +33,7 @@ app.get('/api/chat', (req, res) => {
   res.status(200).json({reponse:`msg recebida: ${message}`});
 });
 
-const port =3000;
+const port =3001;
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}`);
 });
