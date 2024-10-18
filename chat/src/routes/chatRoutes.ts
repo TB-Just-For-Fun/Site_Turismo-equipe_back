@@ -3,8 +3,8 @@ import { createChat, replyChat, getChat } from '../controllers/chatController';
 
 const router = express.Router();
 
-router.post('/', createChat);         
-router.post('/:id', replyChat);       
-router.get('/:id', getChat);          
+router.post('/', createChat);         // Criar nova conversa
+router.post('/:id', replyChat);       // Responder a uma conversa
+router.get('/:id', getChat);          // Obter uma conversa por ID
 
 export default router;
