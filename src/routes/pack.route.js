@@ -4,7 +4,7 @@ const {
     get,
     put,
     apagar,
-    getById,
+    getById
 } = require("../controllers/pack.controller");
 
 route.post("/", create);

@@ -9,10 +9,10 @@ packController.get = async (req, res) => {
 
         const pacotes = await packModel.find();
 
-        if(pacotes.length <1){
+        if (pacotes.length < 1) {
             res.status(200).send("Não há pacotes disponíveis!")
         }
-        else{
+        else {
             return res.status(200).send(pacotes);
         }
     }
@@ -24,11 +24,11 @@ packController.get = async (req, res) => {
 
 //método getById para retornar um pacote específico pelo id
 packController.getById = async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
 
-    const pacote = await packModel.findOne({_id:id});
+    const pacote = await packModel.findOne({ _id: id });
 
-    if(!pacote){
+    if (!pacote) {
         return res.status(404).send("Pacote não encontrado!")
     }
     res.status(200).send(pacote);
@@ -66,19 +66,19 @@ packController.create = async (req, res) => {
     });
 };
 packController.put = async (req, res) => {
-    const {id} = req.params;
-    const {nome_pacote, actividades, duracao, servicos, obs} = req.body;
+    const { id } = req.params;
+    const { nome_pacote, actividades, duracao, servicos, obs } = req.body;
 
-    const pacote = await packModel.findOneAndUpdate({_id:id}, { ...req.body }, { new: true })
+    const pacote = await packModel.findOneAndUpdate({ _id: id }, { ...req.body }, { new: true })
     res.status(200).send({
         message: "Pacote actualizado com sucesso!",
         pacote,
     });
 };
 packController.apagar = async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
 
-    const pacote = await packModel.deleteOne({_id:id});
+    const pacote = await packModel.deleteOne({ _id: id });
 
     return res.status(201).send(pacote);
 };

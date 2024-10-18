@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Reserva = require('../models/user'); 
+const Reserva = require('../models/reserva'); 
 const moment = require('moment-timezone');
 
 const reservaController = {};
