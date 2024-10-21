@@ -8,7 +8,7 @@ const {
 } = require("../controllers/pack.controller");
 
 route.post("/", create);
-route.get("/", get);
+route.get("/pacotes", get);
 route.get("/:id", getById);
 route.put("/:id", put);
 route.delete("/:id", apagar);
