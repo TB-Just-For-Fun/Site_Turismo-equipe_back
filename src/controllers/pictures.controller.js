@@ -115,3 +115,32 @@ exports.findByName = async (req, res) => {
       console.log("Erro ao buscar imagens: ", error)
   }
 };
+
+exports.findByProvincia = async (req, res) => {
+  const { provincia } = req.query;
+
+  try {
+      const pictures = await Picture.find({ provincia: { $regex: new RegExp(provincia, 'i') } });
+
+      if (pictures.length < 1) {
+          res.status(404).send("Imagens não encontradas!");
+      } else {
+          res.status(200).json({ message: "Imagens encontradas: ", pictures });
+      }
+  } catch (error) {
+      res.status(500).send("Ocorreu um erro ao buscar imagem!")
+      console.log("Erro ao buscar imagens: ", error)
+  }
+};
+
+exports.update = async (req, res) => {
+  const {id} = req.params;
+  try {
+    const UpdatePicture = await Picture.findByIdAndUpdate(id, req.body, {new: true});
+
+    res.status(200).json(UpdatePicture);
+  }
+  catch(error){
+    console.log("Ocorreu um erro: ", error);
+  }
+};
