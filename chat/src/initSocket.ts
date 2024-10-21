@@ -6,7 +6,7 @@ const responses = {
     greetings: [
         "Oi! Tudo bem com você? O que gostaria de saber?",
         "Olá! Como posso ajudar hoje?",
-        "Bem-vindo ao Just for Fund! Estou aqui para te ajudar com nossos serviços."
+        "Bem-vindo ao Just for Fund! Estou aqui para te ajudar  com os nossos serviços."
     ],
     aboutUs: [
         "O Just for Fund é uma plataforma de turismo em Angola, especializada em oferecer experiências únicas de viagem. Estamos aqui para ajudar você a explorar o melhor que Angola tem a oferecer!"
@@ -67,7 +67,7 @@ const getBotResponse = (message: string): string => {
 export const initSocket = (server: http.Server): Server => {
     const io = new Server(server, {
         cors: {
-            origin: ['http://localhost:3000', 'http://192.168.43.40:3000'],  // Adicione a origem correta
+            origin: ['http://localhost:3000', 'http://192.168.1.103:3000'],  // Adicione a origem correta
             methods: ['GET', 'POST'],
             credentials: true 
         }
@@ -106,7 +106,7 @@ export const initSocket = (server: http.Server): Server => {
 
                 // Emitir a resposta de volta para o cliente
                 socket.emit('receiveMessage', { text: botResponse, conversationId });
-            }, 5000); // Atraso de 5 segundos
+            }, 1000); // Atraso de 5 segundos
         });
 
         // Evento de desconexão

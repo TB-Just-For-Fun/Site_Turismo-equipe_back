@@ -1,16 +1,33 @@
 const Feedback = require('../models/feedbackModel'); // Certifique-se de que está apontando para o arquivo certo
+const User = require('../models/user.models'); // Modelo de usuário para buscar o nome
 
 const createFeedback = async (req, res, next) => {
     try {
-        const { user_id, rating, comment } = req.body;
+        // Pegue o user_id do cliente logado (normalmente disponível após autenticação)
+        const userId = req.user.id;  // Verifique se você tem `req.user` configurado corretamente no middleware de autenticação
+
+        const { rating, comment } = req.body;
 
         // Validação dos campos
-        if (!user_id || !rating || !comment) {
+        if (!userId || !rating || !comment) {
             return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
         }
 
-        // Criação do novo feedback
-        const newFeedback = new Feedback({ user_id, rating, comment });
+        // Busque o nome do usuário logado no banco de dados
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+
+        // Criação do novo feedback com o nome do usuário
+        const newFeedback = new Feedback({
+            user_id: userId,
+            name: user.name,  // Inclua o nome do usuário
+            rating,
+            comment
+        });
+
         await newFeedback.save();
 
         res.status(201).json({
