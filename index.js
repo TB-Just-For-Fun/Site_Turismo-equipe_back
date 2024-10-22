@@ -14,7 +14,7 @@ const packRoute = require("./src/routes/pack.route");
 const notificacoesRoutes = require('./src/routes/notificacoes.route');
 const reservaRoute = require('./src/routes/reserva.route');
 const userRoute = require('./src/routes/user.route');
-const feedbackRoutes = require('./src/routes/feedbackRoutes');
+const feedbackRoutes = require("./src/routes/feedbackRoutes"); // Verifique o caminho
 const SMTP_CONFIG = require("./src/Config/Smtp");
 
 // Middleware para aumentar o timeout
@@ -58,7 +58,7 @@ app.use("/api_pacotes", packRoute);
     //rota de usuarios
 app.use("/api_usuarios", userRoute);
     //rota de feedback
-app.use('/api/feedback', feedbackRoutes);
+    app.use("/api/feedback", feedbackRoutes); // Assegure-se de que isso está correto
 
 app.listen(port, () => {
     console.log(`O servidor está rodando na porta ${port}!`);

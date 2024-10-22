@@ -5,6 +5,10 @@ const feedbackSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    user_name: {
+        type: String,
+        required: true, // Vamos adicionar o nome do usuário logado
+    },
     rating: {
         type: Number,
         required: true,
