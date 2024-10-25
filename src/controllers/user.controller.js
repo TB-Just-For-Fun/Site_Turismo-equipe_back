@@ -14,12 +14,10 @@ const { validationResult } = require('express-validator');
 const userController = {};
 
 userController.login = async (req, res) => {
-    // Verifica se o corpo da requisição está sendo recebido corretamente
     console.log(req.body);
 
     const { email, password } = req.body;
 
-    // Verifica se email e senha foram fornecidos
     if (!email || !password) {
         return res.status(400).send({ message: "Email e senha são obrigatórios" });
     }
@@ -27,14 +25,7 @@ userController.login = async (req, res) => {
     try {
         const user = await userModel.findOne({ email });
 
-        // Verifica se o usuário existe
         if (!user) {
-            return res.status(401).send({ message: "Email ou senha incorretos" });
-        }
-
-        // Compara a senha fornecida com a senha armazenada no banco de dados
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
             return res.status(401).send({ message: "Email ou senha incorretos" });
         }
 
@@ -46,24 +37,29 @@ userController.login = async (req, res) => {
                     role: user.role 
                 },  
                 process.env.JWT_SECRET,
-                { expiresIn: '2d' }  
+                { expiresIn: '2d' }
             );
         };
-        
+
         const token = generateToken(user);
 
-        // Define o token como um cookie HTTP
+        // Define o cookie com o token
         res.cookie('token', token, {
-            httpOnly: true,     // Impede o acesso via JavaScript
-            secure: process.env.NODE_ENV === 'production', // Somente HTTPS em produção
-            sameSite: 'Strict', // Proteção contra CSRF
-            maxAge: 2 * 24 * 60 * 60 * 1000  // Define a duração do cookie (2 dias)
+            httpOnly: true,
+            secure: true,
+            sameSite: 'Lax',
+            maxAge: 2 * 24 * 60 * 60 * 1000
         });
 
-        // Retorna a resposta de sucesso
-        return res.status(200).send({ message: 'Login bem-sucedido' });
+        // Exibe o valor do cookie no console
+        console.log('Token gerado e armazenado no cookie:', token);
+        console.log('---------------------------------------------')
+        console.log('Token role:', user.role, ' - Logado com sucesso'); 
+
+        return res.status(200).send({ message: 'Login bem-sucedido', token });
+            
     } catch (error) {
-        console.error(error);
+        console.error('Erro no login:', error); // Log detalhado
         return res.status(500).send({ message: "Erro no login", error });
     }
 };

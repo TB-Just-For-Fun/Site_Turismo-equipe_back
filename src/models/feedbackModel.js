@@ -1,11 +1,25 @@
 const mongoose = require('mongoose');
 
 const feedbackSchema = new mongoose.Schema({
-    name: { type: String, required: true }, // Campo para o nome do usuário
-    comment: { type: String, required: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Referência ao modelo de usuário (opcional)
-    rating:{ type: Number, require:true}
-}, { timestamps: true });
+    user_id: {
+        type: String,
+        required: true,
+    },
+    user_name: {
+        type: String,
+        required: true, // Vamos adicionar o nome do usuário logado
+    },
+    rating: {
+        type: Number,
+        required: true,
+    },
+    comment: {
+        type: String,
+        required: true,
+    }
+}, {
+    timestamps: true // Isso vai adicionar 'createdAt' e 'updatedAt' automaticamente
+});
 
 const Feedback = mongoose.model('Feedback', feedbackSchema);
 

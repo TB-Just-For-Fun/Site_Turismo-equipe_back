@@ -49,3 +49,4 @@ userSchema.methods.toJSON = function() {
 };
 
 module.exports = mongoose.model("user", userSchema, "api_usuarios");
+
