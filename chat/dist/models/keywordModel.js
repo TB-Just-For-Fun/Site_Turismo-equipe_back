@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 const keywordSchema = new Schema({
-    name: { type: String, required: true },
+    word: { type: String, required: true },
     category: { type: String, required: true }
 });
-const KeywordModel = model('Keyword', keywordSchema);
-export default KeywordModel;
+const Keyword = model('Keyword', keywordSchema);
+export default Keyword;

@@ -1,6 +1,0 @@
-import Response from '../models/response';
-
-export const findResponse = async (category: string): Promise<string[]> => {
-    const response = await Response.findOne({ category });
-    return response ? response.messages : ["Desculpe, não consegui encontrar uma resposta apropriada."];
-};

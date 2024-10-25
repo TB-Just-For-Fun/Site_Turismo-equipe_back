@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 
 const feedbackSchema = new mongoose.Schema({
-    user_id: {
-        type: String,
+    user: {
+        type: mongoose.Schema.Types.ObjectId, // Usar ObjectId para relacionar com o usuário
+        ref: 'User', // Ref para o modelo de Usuário
         required: true,
     },
-    user_name: {
+    name: {
         type: String,
         required: true, // Vamos adicionar o nome do usuário logado
     },
