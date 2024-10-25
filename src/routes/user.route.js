@@ -35,7 +35,7 @@ route.post('/create-admin', authMiddleware.verifyToken, authMiddleware.verifyAdm
 route.use(authMiddleware.verifyToken);
 
 // Rotas protegidas que precisam de autenticação
-route.get("/", get);              
+route.get("/busca", get);              
 route.get("/:id", getById); 
 route.get("/buscar/get", getByEmail);     
 route.patch("/:id", patch);       

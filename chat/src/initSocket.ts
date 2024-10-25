@@ -67,7 +67,7 @@ const getBotResponse = (message: string): string => {
 export const initSocket = (server: http.Server): Server => {
     const io = new Server(server, {
         cors: {
-            origin: ['http://localhost:3000', 'http://192.168.1.103:3000'],  // Adicione a origem correta
+            origin: ['http://localhost:3000', 'http://192.168.43.40:3000'],  // Adicione a origem correta
             methods: ['GET', 'POST'],
             credentials: true 
         }
