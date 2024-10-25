@@ -18,6 +18,7 @@ const {
     putByEmail 
 } = require('../controllers/user.controller'); 
 
+
 // Rota de login (rota pública)
 route.post("/login", login);
 
