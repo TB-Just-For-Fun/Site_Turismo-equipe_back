@@ -1,46 +1,84 @@
-import { Request, Response } from 'express';
+import { Request, Response as ExpressResponse } from 'express';
+import Chat from '../models/chatModel';
+import Keyword from '../models/keywordModel';
+import { normalizeString } from '../utils/normalizeString';
+import { getRandomMessage } from '../utils/getRandomMessage';
+import ResponseModel from '../models/responseModel'; // Nome alternativo para o modelo Response
 
-const conversations: { [key: string]: Array<{ sender: string; text: string }> } = {};
+// Cria uma nova conversa com a mensagem inicial do bot
+export const createChat = async (req: Request, res: ExpressResponse) => {
+    try {
+        const { userId, userMessage } = req.body;
+        const botResponse = "Bem-vindo ao Just for Fund! Como posso te ajudar?";
 
-// Função para criar uma nova conversa e responder automaticamente
-export const createChat = (req: Request, res: Response) => {
-    const { userMessage } = req.body;
-    const conversationId = Object.keys(conversations).length + 1;
-    const botMessage = "Bem-vindo ao Just for Fund! Como posso te ajudar?";
+        const newChat = new Chat({ userId, userMessage, botResponse });
+        await newChat.save();
 
-    conversations[conversationId] = [
-        { sender: 'User', text: userMessage },
-        { sender: 'Bot', text: botMessage }
-    ];
-
-    res.status(201).send({ message: botMessage, conversationId });
-};
-
-// Função para responder uma conversa existente
-export const replyChat = (req: Request, res: Response) => {
-    const chatId = req.params.id;
-    const { userMessage } = req.body;
-
-    if (conversations[chatId]) {
-        const botResponse = "Estou aqui para ajudar com mais informações sobre o Just for Fund.";
-
-        conversations[chatId].push({ sender: 'User', text: userMessage });
-        conversations[chatId].push({ sender: 'Bot', text: botResponse });
-
-        res.status(200).send({ message: botResponse });
-    } else {
-        res.status(404).send({ error: "Conversa não encontrada." });
+        res.status(201).send({ message: botResponse, chatId: newChat._id });
+    } catch (error) {
+        res.status(500).send({ error: 'Erro ao criar o chat' });
     }
 };
 
-// Função para obter o histórico de uma conversa
-export const getChat = (req: Request, res: Response) => {
-    const chatId = req.params.id;
-    const conversation = conversations[chatId];
+// Responde ao usuário com base na mensagem e nas palavras-chave
+export const replyChat = async (userMessage: string): Promise<string> => {
+    try {
+        console.log("Processando mensagem do usuário:", userMessage);
 
-    if (conversation) {
-        res.status(200).send({ messages: conversation });
-    } else {
-        res.status(404).send({ error: 'Conversa não encontrada.' });
+        // Normaliza a mensagem
+        const normalizedMessage = normalizeString(userMessage);
+
+        // Busca palavras-chave que correspondem à mensagem do usuário
+        const keywords = await Keyword.find();
+        const foundKeyword = keywords.find(keyword =>
+            normalizedMessage.includes(normalizeString(keyword.word))
+        );
+
+        let botResponse;
+
+        if (foundKeyword) {
+            // Busca as respostas com base na categoria da palavra-chave
+            const responses = await ResponseModel.find({ category: foundKeyword.category });
+
+            if (responses.length > 0) {
+                const messages = responses[0].messages; // Pega a primeira resposta ou implemente lógica para múltiplas
+                botResponse = getRandomMessage(messages);
+            } else {
+                botResponse = "Desculpe, não consegui encontrar uma resposta apropriada.";
+            }
+        } else {
+            botResponse = "Desculpe, não entendi. Pode reformular sua pergunta?";
+        }
+
+        // Salva a interação no banco de dados
+        const chatEntry = new Chat({ userMessage, botResponse });
+        await chatEntry.save();
+
+        console.log("Resposta salva no banco de dados:", botResponse);
+
+        return botResponse;
+    } catch (error) {
+        console.error("Erro ao responder no chat:", error);
+        return "Erro ao buscar uma resposta. Tente novamente mais tarde.";
     }
 };
+
+// Busca as mensagens de uma conversa
+export const getChat = async (req: Request, res: ExpressResponse) => {
+    const chatId = req.params.id;
+
+    try {
+        const conversations = await Chat.find({ userId: chatId });
+
+        if (conversations.length > 0) {
+            res.status(200).send({ messages: conversations });
+        } else {
+            res.status(404).send({ error: 'Conversa não encontrada.' });
+        }
+    } catch (error) {
+        res.status(500).send({ error: 'Erro ao buscar o chat.' });
+    }
+};
+
+// Exporta a função de resposta como `handleUserMessage`
+export const handleUserMessage = replyChat;

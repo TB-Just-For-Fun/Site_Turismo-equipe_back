@@ -1,60 +1,58 @@
-const Feedback = require('../models/feedbackModel'); // Certifique-se de que está apontando para o arquivo certo
-const User = require('../models/user.models'); // Modelo de usuário para buscar o nome
+const Feedback = require('../models/feedbackModel');
+const userModel = require('../models/user.models');
+const jwt = require('jsonwebtoken'); // Se você estiver usando JWT para autenticação
 
-const createFeedback = async (req, res, next) => {
+
+const createFeedback = async (req, res) => {
     try {
-        // Pegue o user_id do cliente logado (normalmente disponível após autenticação)
-        const userId = req.user.id;  // Verifique se você tem `req.user` configurado corretamente no middleware de autenticação
+        const token = req.headers.authorization.split(' ')[1]; // Obtém o token do cabeçalho
 
-        const { rating, comment } = req.body;
-
-        // Validação dos campos
-        if (!userId || !rating || !comment) {
-            return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
+        if (!token) {
+            return res.status(401).json({ message: 'Token não fornecido' });
         }
 
-        // Busque o nome do usuário logado no banco de dados
-        const user = await User.findById(userId);
+        // Decodifica o token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Certifique-se de usar a chave secreta correta
+        const userId = decoded.id;
+        const username = decoded.username; // O nome do usuário obtido do token
+        const role = decoded.role; // Obtém o papel do usuário a partir do token
 
-        if (!user) {
-            return res.status(404).json({ message: 'Usuário não encontrado' });
-        }
+        // Lógica para criar feedback
+        const feedbackData = {
+            rating: req.body.rating,
+            comment: req.body.comment,
+            name: username, // Preenche automaticamente o nome do usuário
+            user: userId,
+            tipo: role // Armazena o papel do usuário
+        };
 
-        // Criação do novo feedback com o nome do usuário
-        const newFeedback = new Feedback({
-            user_id: userId,
-            name: user.name,  // Inclua o nome do usuário
-            rating,
-            comment
-        });
-
-        await newFeedback.save();
-
-        res.status(201).json({
-            message: 'Feedback criado com sucesso!',
-            feedback: newFeedback,
-        });
+        const feedback = new Feedback(feedbackData);
+        await feedback.save();
+        res.status(201).json({ message: 'Feedback criado com sucesso', feedback });
     } catch (error) {
-        console.error('Erro ao criar feedback:', error);
-        res.status(500).json({ message: 'Erro ao criar feedback', error: error.message });
-    }
-};
-
-const getAllFeedback = async (req, res, next) => {
-    try {
-        const feedbacks = await Feedback.find(); // Obtendo todos os feedbacks
-
-        res.status(200).json({
-            message: 'Feedbacks obtidos com sucesso',
-            feedbacks: feedbacks,
-        });
-    } catch (error) {
-        console.error('Erro ao obter feedbacks:', error);
-        res.status(500).json({ message: 'Erro ao obter feedbacks', error: error.message });
+        console.error('Erro ao criar feedback:', error.message); // Mensagem de erro mais clara
+        res.status(400).json({ message: 'Erro ao criar feedback', error: error.message });
     }
 };
 
 module.exports = {
     createFeedback,
-    getAllFeedback,
+    // Outras exportações, se necessário
+};
+
+
+
+const getAllFeedback = async (req, res) => {
+    try {
+        const feedbacks = await Feedback.find(); // Busca todos os feedbacks
+        res.status(200).json(feedbacks);
+    } catch (error) {
+        console.error('Erro ao buscar feedbacks:', error);
+        res.status(500).json({ message: 'Erro ao buscar feedbacks', error: error.message });
+    }
+};
+
+module.exports = {
+    createFeedback,
+    getAllFeedback // Adicione esta linha se a função estiver definida
 };

@@ -1,0 +1,10 @@
+// data/keywords.json
+
+[
+    { "keyword": "olá", "category": "saudacao" },
+    { "keyword": "oi", "category": "saudacao" },
+    { "keyword": "preço", "category": "informacao" },
+    { "keyword": "reservar", "category": "reservas" },
+    { "keyword": "localização", "category": "localizacao" }
+  ]
+  

@@ -1,63 +1,71 @@
-const responses = {
-    greetings: [
-        "Olá! Como posso ajudar hoje?",
-        "Oi! Tudo bem com você? O que gostaria de saber?",
-        "Bem-vindo! Estou aqui para te ajudar com nossos serviços."
-    ],
-    services: [
-        "Nós oferecemos pacotes de turismo personalizados para várias regiões.",
-        "Nossos serviços incluem reservas de hotéis, pacotes turísticos e guias locais.",
-        "Quer saber mais sobre nossos pacotes? Temos ofertas exclusivas!"
-    ],
-    general: [
-        "Posso te ajudar com mais alguma coisa?",
-        "Fique à vontade para perguntar o que precisar!",
-        "Se precisar de mais informações, estou aqui para ajudar."
-    ]
+import Chat from '../models/chatModel';
+import Keyword from '../models/keywordModel';
+import { normalizeString } from '../utils/normalizeString';
+import { getRandomMessage } from '../utils/getRandomMessage';
+import ResponseModel from '../models/responseModel'; // Nome alternativo para o modelo Response
+// Cria uma nova conversa com a mensagem inicial do bot
+export const createChat = async (req, res) => {
+    try {
+        const { userId, userMessage } = req.body;
+        const botResponse = "Bem-vindo ao Just for Fund! Como posso te ajudar?";
+        const newChat = new Chat({ userId, userMessage, botResponse });
+        await newChat.save();
+        res.status(201).send({ message: botResponse, chatId: newChat._id });
+    }
+    catch (error) {
+        res.status(500).send({ error: 'Erro ao criar o chat' });
+    }
 };
-const conversations = {};
-export const createChat = (req, res) => {
-    const { userMessage } = req.body;
-    const botMessage = getRandomMessage("greetings");
-    const conversationId = Object.keys(conversations).length + 1;
-    conversations[conversationId] = [
-        { sender: 'User', text: userMessage },
-        { sender: 'Bot', text: botMessage }
-    ];
-    res.status(201).send({ message: botMessage, conversationId });
+// Responde ao usuário com base na mensagem e nas palavras-chave
+export const replyChat = async (userMessage) => {
+    try {
+        console.log("Processando mensagem do usuário:", userMessage);
+        // Normaliza a mensagem
+        const normalizedMessage = normalizeString(userMessage);
+        // Busca palavras-chave que correspondem à mensagem do usuário
+        const keywords = await Keyword.find();
+        const foundKeyword = keywords.find(keyword => normalizedMessage.includes(normalizeString(keyword.word)));
+        let botResponse;
+        if (foundKeyword) {
+            // Busca as respostas com base na categoria da palavra-chave
+            const responses = await ResponseModel.find({ category: foundKeyword.category });
+            if (responses.length > 0) {
+                const messages = responses[0].messages; // Pega a primeira resposta ou implemente lógica para múltiplas
+                botResponse = getRandomMessage(messages);
+            }
+            else {
+                botResponse = "Desculpe, não consegui encontrar uma resposta apropriada.";
+            }
+        }
+        else {
+            botResponse = "Desculpe, não entendi. Pode reformular sua pergunta?";
+        }
+        // Salva a interação no banco de dados
+        const chatEntry = new Chat({ userMessage, botResponse });
+        await chatEntry.save();
+        console.log("Resposta salva no banco de dados:", botResponse);
+        return botResponse;
+    }
+    catch (error) {
+        console.error("Erro ao responder no chat:", error);
+        return "Erro ao buscar uma resposta. Tente novamente mais tarde.";
+    }
 };
-export const replyChat = (req, res) => {
+// Busca as mensagens de uma conversa
+export const getChat = async (req, res) => {
     const chatId = req.params.id;
-    const { userMessage } = req.body;
-    if (conversations[chatId]) {
-        const botResponse = getRandomMessage("services");
-        conversations[chatId].push({ sender: 'User', text: userMessage });
-        conversations[chatId].push({ sender: 'Bot', text: botResponse });
-        res.status(200).send({ message: botResponse });
+    try {
+        const conversations = await Chat.find({ userId: chatId });
+        if (conversations.length > 0) {
+            res.status(200).send({ messages: conversations });
+        }
+        else {
+            res.status(404).send({ error: 'Conversa não encontrada.' });
+        }
     }
-    else {
-        res.status(404).send({ error: "Conversa não encontrada." });
-    }
-};
-export const getChat = (req, res) => {
-    const chatId = req.params.id;
-    const conversation = conversations[chatId];
-    if (conversation) {
-        res.status(200).send({ id: chatId, messages: conversation });
-    }
-    else {
-        res.status(404).send({ error: 'Conversa não encontrada.' });
+    catch (error) {
+        res.status(500).send({ error: 'Erro ao buscar o chat.' });
     }
 };
-export const createTicket = (req, res) => {
-    res.status(201).send({ message: "Ticket de suporte criado." });
-};
-export const getTicket = (req, res) => {
-    const ticketId = req.params.id;
-    res.status(200).send({ message: `Detalhes do ticket ${ticketId}.` });
-};
-const getRandomMessage = (category) => {
-    const messages = responses[category];
-    const randomIndex = Math.floor(Math.random() * messages.length);
-    return messages[randomIndex];
-};
+// Exporta a função de resposta como `handleUserMessage`
+export const handleUserMessage = replyChat;

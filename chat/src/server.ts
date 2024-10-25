@@ -1,55 +1,33 @@
 import express, { Application } from 'express';
 import http from 'http';
 import cors from 'cors';
-import database from './database/db';
-import { Server } from 'socket.io';
-import { initSocket } from './initSocket';
-import chatRoutes from './routes/chatRoutes'; 
-import connectDatabase from './database/db.js';
+import initSocket from './initSocket';
+import mongoose from 'mongoose';
 
-class App {
-    public app: Application;
-    public server: http.Server;
-    public io: Server;
+const mongoURI = 'mongodb+srv://Aldasmix:Aldasmix@cluster1.vle7k.mongodb.net/justforfun';
+const app: Application = express();
+const server = http.createServer(app);
 
-    constructor() {
-        this.app = express();
-        this.server = http.createServer(this.app);
-        this.io = initSocket(this.server); 
+const corsOptions = {
+    origin: ['http://localhost:3001', 'http://192.168.102.251:3001', 'http://192.168.102.211:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+};
 
-        this.middlewares();
-        this.routes();
-    }
+app.use(cors(corsOptions));
 
-    
-    private middlewares(): void {
-        this.app.use(cors({
-            origin: ['http://localhost:3001', 'http://192.168.43.54:3001', 'http://192.168.43.40:3000'],
-            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization'],
-            credentials: true
-        }));
-// Garante que o CORS esteja corretamente configurado
-        this.app.options('*', cors()); // Lida com requisições preflight
-        this.app.use(express.json());
+// Inicializando o Socket.IO
+initSocket(server);
 
-        
-    }
-
-   
-    private routes(): void {
-        this.app.use('/api/chat', chatRoutes); 
-    }
-
-  
-    public listen(port: number): void {
-        this.server.listen(port, () => {
-            console.log(`Servidor rodando na porta ${port}`);
+// Conexão ao MongoDB
+mongoose.connect(mongoURI)
+    .then(() => {
+        console.log('Conexão com MongoDB Atlas bem-sucedida');
+        server.listen(3001, () => {
+            console.log('Servidor rodando na porta 3001');
         });
-    }
-}
-connectDatabase();
-const app = new App();
-app.listen(3001);
-
-
+    })
+    .catch((err) => {
+        console.error('Erro ao conectar ao banco de dados:', err);
+    });

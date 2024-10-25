@@ -46,7 +46,7 @@ userController.login = async (req, res) => {
                     role: user.role 
                 },  
                 process.env.JWT_SECRET,
-                { expiresIn: '2d' }  // Define a expiração do token
+                { expiresIn: '2d' }  
             );
         };
         
@@ -201,6 +201,10 @@ userController.createAdmin = async (req, res) => {
 // Método GET (acesso apenas por administradores)
 userController.get = async (req, res) => {
     try {
+        // Adicionando um log para verificar a role do token
+        console.log('Token role:', req.user.role);
+
+        // Verificação de role (se o usuário é administrador ou administrador supremo)
         if (req.user.role !== 'administrador' && req.user.role !== 'administrador_supremo') {
             return res.status(403).send({ message: "Acesso negado. Apenas administradores." });
         }
@@ -212,6 +216,7 @@ userController.get = async (req, res) => {
         return res.status(500).send({ message: "Ocorreu um erro", error });
     }
 };
+
 
 // Método getById
 userController.getById = async (req, res) => {
