@@ -1,9 +1,19 @@
-import mongoose from 'mongoose';
+// src/models/chatModel.ts
+import mongoose, { Schema, Document } from 'mongoose';
 
-const messageSchema = new mongoose.Schema({
-  user: { type: String, required: true },
-  message: { type: String, required: true },
-}, { timestamps: true });
+interface ChatResponse extends Document {
+    userMessage: string;
+    botResponse: string;
+    text?: string;
+    category?: string;
+}
 
-const Message = mongoose.model('Message', messageSchema);
-export default Message;
+const ChatSchema = new Schema({
+    userMessage: { type: String, required: true },
+    botResponse: { type: String, required: true },
+    text: { type: String }, // Opcional
+    category: { type: String } // Opcional
+});
+
+const Chat = mongoose.model<ChatResponse>('Chat', ChatSchema);
+export default Chat;

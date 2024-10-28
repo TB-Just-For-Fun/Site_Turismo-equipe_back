@@ -14,12 +14,10 @@ const { validationResult } = require('express-validator');
 const userController = {};
 
 userController.login = async (req, res) => {
-    // Verifica se o corpo da requisição está sendo recebido corretamente
     console.log(req.body);
 
     const { email, password } = req.body;
 
-    // Verifica se email e senha foram fornecidos
     if (!email || !password) {
         return res.status(400).send({ message: "Email e senha são obrigatórios" });
     }
@@ -27,14 +25,7 @@ userController.login = async (req, res) => {
     try {
         const user = await userModel.findOne({ email });
 
-        // Verifica se o usuário existe
         if (!user) {
-            return res.status(401).send({ message: "Email ou senha incorretos" });
-        }
-
-        // Compara a senha fornecida com a senha armazenada no banco de dados
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
             return res.status(401).send({ message: "Email ou senha incorretos" });
         }
 
@@ -46,24 +37,29 @@ userController.login = async (req, res) => {
                     role: user.role 
                 },  
                 process.env.JWT_SECRET,
-                { expiresIn: '2d' }  // Define a expiração do token
+                { expiresIn: '2d' }
             );
         };
-        
+
         const token = generateToken(user);
 
-        // Define o token como um cookie HTTP
+        // Define o cookie com o token
         res.cookie('token', token, {
-            httpOnly: true,     // Impede o acesso via JavaScript
-            secure: process.env.NODE_ENV === 'production', // Somente HTTPS em produção
-            sameSite: 'Strict', // Proteção contra CSRF
-            maxAge: 2 * 24 * 60 * 60 * 1000  // Define a duração do cookie (2 dias)
+            httpOnly: true,
+            secure: true,
+            sameSite: 'Lax',
+            maxAge: 2 * 24 * 60 * 60 * 1000
         });
 
-        // Retorna a resposta de sucesso
-        return res.status(200).send({ message: 'Login bem-sucedido' });
+        // Exibe o valor do cookie no console
+        console.log('Token gerado e armazenado no cookie:', token);
+        console.log('---------------------------------------------')
+        console.log('Token role:', user.role, ' - Logado com sucesso'); 
+
+        return res.status(200).send({ message: 'Login bem-sucedido', token });
+            
     } catch (error) {
-        console.error(error);
+        console.error('Erro no login:', error); // Log detalhado
         return res.status(500).send({ message: "Erro no login", error });
     }
 };
@@ -201,6 +197,10 @@ userController.createAdmin = async (req, res) => {
 // Método GET (acesso apenas por administradores)
 userController.get = async (req, res) => {
     try {
+        // Adicionando um log para verificar a role do token
+        console.log('Token role:', req.user.role);
+
+        // Verificação de role (se o usuário é administrador ou administrador supremo)
         if (req.user.role !== 'administrador' && req.user.role !== 'administrador_supremo') {
             return res.status(403).send({ message: "Acesso negado. Apenas administradores." });
         }
@@ -212,6 +212,7 @@ userController.get = async (req, res) => {
         return res.status(500).send({ message: "Ocorreu um erro", error });
     }
 };
+
 
 // Método getById
 userController.getById = async (req, res) => {
@@ -316,7 +317,7 @@ async function enviarEmailConfirmacao(email, username) {
             Prepare-se para explorar o mundo de forma divertida e única!\n\n
             Boa viagem! 🧳✈️\n\n
             Faça login agora, com suas credenciais:\n
-            <a href="https://192.168.102.251/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
+            <a href="https://192.168.1.104/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
         `;
 
         await transporter.sendMail({
@@ -617,7 +618,7 @@ async function enviarEmailPromocao(email) {
             Vamos juntos fazer do Just For Fun um lugar ainda mais incrível!\n\n
             👏 Parabéns novamente! 👏\n\n
             Faça login agora, com suas credenciais:\n
-            <a href="https://192.168.102.251/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
+            <a href="https://192.168.1.104/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
         `;
 
         await transporter.sendMail({
