@@ -14,6 +14,7 @@ exports.create = async (req, res) => {
   try {
     const { name } = req.body;
     const { description } = req.body;
+    const { provincia } = req.body;
     const file = req.file;
 
     // Gerar nome único para o arquivo
@@ -39,13 +40,14 @@ exports.create = async (req, res) => {
         const baseURL = "https://firebasestorage.googleapis.com/v0/b/justforfun-28d85.appspot.com/o/images%2F"
         const downloadURL = `${baseURL}${(await uploadTask).metadata.name}?alt=media`;
 
-        if (!name || !description || !file) {
+        if (!name || !description || !provincia || !file) {
           res.status(400).send({ message: "Todos os campos são obrigatórios!" });
         }
         else {
           const picture = new Picture({
             name,
             description,
+            provincia,
             src: downloadURL, // URL da imagem no Firebase Storage
           });
 
