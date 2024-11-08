@@ -12,7 +12,7 @@ const storage = getStorage(firebase.app);
 
 exports.create = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { nome } = req.body;
     const { description } = req.body;
     const { provincia } = req.body;
     const file = req.file;
@@ -40,12 +40,12 @@ exports.create = async (req, res) => {
         const baseURL = "https://firebasestorage.googleapis.com/v0/b/justforfun-28d85.appspot.com/o/images%2F"
         const downloadURL = `${baseURL}${(await uploadTask).metadata.name}?alt=media`;
 
-        if (!name || !description || !provincia || !file) {
+        if (!nome || !description || !provincia || !file) {
           res.status(400).send({ message: "Todos os campos são obrigatórios!" });
         }
         else {
           const picture = new Picture({
-            name,
+            nome,
             description,
             provincia,
             src: downloadURL, // URL da imagem no Firebase Storage
@@ -102,10 +102,10 @@ exports.remove = async (req, res) => {
 };
 
 exports.findByName = async (req, res) => {
-  const { name } = req.query;
+  const { nome } = req.query;
 
   try {
-      const pictures = await Picture.find({ name: { $regex: new RegExp(name, 'i') } });
+      const pictures = await Picture.find({ name: { $regex: new RegExp(nome, 'i') } });
 
       if (pictures.length < 1) {
           res.status(404).send("Imagem não encontrada!");
