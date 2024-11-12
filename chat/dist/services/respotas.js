@@ -4,7 +4,7 @@ export const findResponse = async (category) => {
         const response = await Response.findOne({ category });
         // Verifica se a resposta foi encontrada
         if (response) {
-            return response.userMessage; // Retorna a mensagem do usuário se encontrada
+            return response.message; // Retorna a mensagem do usuário se encontrada
         }
         else {
             // Retorna uma mensagem padrão se não encontrar a resposta

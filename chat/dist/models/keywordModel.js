@@ -1,7 +1,9 @@
-import { Schema, model } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 const keywordSchema = new Schema({
-    word: { type: String, required: true },
-    category: { type: String, required: true }
+    keyword: { type: String, required: true, unique: true },
+    response: { type: String, required: true },
+    synonyms: { type: [String], default: [] }, // Definindo 'synonyms' como um array de strings, com valor padrão de array vazio
 });
-const Keyword = model('Keyword', keywordSchema);
+// Criação do modelo Keyword com verificação para evitar redefinir se o modelo já existe
+const Keyword = mongoose.models.Keyword || mongoose.model('Keyword', keywordSchema);
 export default Keyword;

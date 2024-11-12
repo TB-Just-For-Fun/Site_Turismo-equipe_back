@@ -1,28 +1,45 @@
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
+import chatRoutes from './routes/chatRoutes';
 import initSocket from './initSocket';
-import mongoose from 'mongoose';
-const mongoURI = 'mongodb+srv://Aldasmix:Aldasmix@cluster1.vle7k.mongodb.net/justforfun';
-const app = express();
-const server = http.createServer(app);
-const corsOptions = {
-    origin: ['http://localhost:3001', 'http://192.168.102.251:3001', 'http://192.168.102.211:3000'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
+class App {
+    app;
+    server;
+    io;
+    constructor() {
+        this.app = express();
+        this.server = http.createServer(this.app);
+        // Initialize Socket.IO with the server instance
+        this.io = initSocket(this.server); // Initialize Socket.IO here
+        this.middlewares();
+        this.routes();
+    }
+    middlewares() {
+        this.app.use(cors({
+            origin: ['http://localhost:3000', 'http://192.168.43.54:3000'],
+            methods: ['GET', 'POST'],
+            credentials: true,
+        }));
+        this.app.use(express.json());
+    }
+    routes() {
+        this.app.use('/api/chat', chatRoutes);
+    }
+    listen(port) {
+        this.server.listen(port, () => {
+            console.log(`Servidor rodando na porta ${port}`);
+        });
+    }
+}
+// Função principal para conectar ao banco de dados e inicializar o servidor
+const main = async () => {
+    try {
+        const application = new App(); // Criar instância da classe App
+        application.listen(3001); // Iniciar servidor na porta 3001
+    }
+    catch (error) {
+        console.error('Erro na execução do main:', error);
+    }
 };
-app.use(cors(corsOptions));
-// Inicializando o Socket.IO
-initSocket(server);
-// Conexão ao MongoDB
-mongoose.connect(mongoURI)
-    .then(() => {
-    console.log('Conexão com MongoDB Atlas bem-sucedida');
-    server.listen(3001, () => {
-        console.log('Servidor rodando na porta 3001');
-    });
-})
-    .catch((err) => {
-    console.error('Erro ao conectar ao banco de dados:', err);
-});
+main();
