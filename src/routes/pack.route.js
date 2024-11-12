@@ -1,16 +1,22 @@
 const route = require("express").Router();
+const {authMiddleware} = require("../middlewares/auth.middleware");
 const {
     create,
     get,
-    put,
+    patch,
     apagar,
     getById
 } = require("../controllers/pack.controller");
 
-route.post("/", create);
+
+//rotas públicas
 route.get("/pacotes", get);
 route.get("/:id", getById);
-route.put("/:id", put);
+
+//rotas privadas
+route.use(authMiddleware.verifyToken);
+route.post("/", create);
+route.patch("/:id", patch);
 route.delete("/:id", apagar);
 
 module.exports = route;

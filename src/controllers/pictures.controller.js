@@ -17,6 +17,14 @@ exports.create = async (req, res) => {
     const { provincia } = req.body;
     const file = req.file;
 
+    if (req.user.role !== "administrador" && req.user.role !== "administrador_supremo") {
+      res.status(401).send("Acesso negado!")
+    }
+
+    if (!file) {
+      res.status(400).json({ message: "Nenhum ficheiro enviado!" })
+    }
+
     // Gerar nome único para o arquivo
     const filename = `${Date.now()}${file.originalname.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`;
     const storageRef = ref(storage, `images/${filename}`);
@@ -78,6 +86,11 @@ exports.findAll = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
+
+    if (req.user.role !== "administrador" && req.user.role !== "administrador_supremo") {
+      res.status(401).send("Acesso negado!")
+    }
+
     const picture = await Picture.findById(req.params.id);
 
     if (!picture) {
@@ -105,16 +118,16 @@ exports.findByName = async (req, res) => {
   const { nome } = req.query;
 
   try {
-      const pictures = await Picture.find({ name: { $regex: new RegExp(nome, 'i') } });
+    const pictures = await Picture.find({ name: { $regex: new RegExp(nome, 'i') } });
 
-      if (pictures.length < 1) {
-          res.status(404).send("Imagem não encontrada!");
-      } else {
-          res.status(200).json({ message: "Imagens encontradas: ", pictures });
-      }
+    if (pictures.length < 1) {
+      res.status(404).send("Imagem não encontrada!");
+    } else {
+      res.status(200).json({ message: "Imagens encontradas: ", pictures });
+    }
   } catch (error) {
-      res.status(500).send("Ocorreu um erro ao buscar imagem!")
-      console.log("Erro ao buscar imagens: ", error)
+    res.status(500).send("Ocorreu um erro ao buscar imagem!")
+    console.log("Erro ao buscar imagens: ", error)
   }
 };
 
@@ -122,27 +135,32 @@ exports.findByProvincia = async (req, res) => {
   const { provincia } = req.query;
 
   try {
-      const pictures = await Picture.find({ provincia: { $regex: new RegExp(provincia, 'i') } });
+    const pictures = await Picture.find({ provincia: { $regex: new RegExp(provincia, 'i') } });
 
-      if (pictures.length < 1) {
-          res.status(404).send("Imagens não encontradas!");
-      } else {
-          res.status(200).json({ message: "Imagens encontradas: ", pictures });
-      }
+    if (pictures.length < 1) {
+      res.status(404).send("Imagens não encontradas!");
+    } else {
+      res.status(200).json({ message: "Imagens encontradas: ", pictures });
+    }
   } catch (error) {
-      res.status(500).send("Ocorreu um erro ao buscar imagem!")
-      console.log("Erro ao buscar imagens: ", error)
+    res.status(500).send("Ocorreu um erro ao buscar imagem!")
+    console.log("Erro ao buscar imagens: ", error)
   }
 };
 
 exports.update = async (req, res) => {
-  const {id} = req.params;
+
+  if (req.user.role !== "administrador" && req.user.role !== "administrador_supremo") {
+    res.status(401).send("Acesso negado!")
+  }
+
+  const { id } = req.params;
   try {
-    const UpdatePicture = await Picture.findByIdAndUpdate(id, req.body, {new: true});
+    const UpdatePicture = await Picture.findByIdAndUpdate(id, req.body, { new: true });
 
     res.status(200).json(UpdatePicture);
   }
-  catch(error){
+  catch (error) {
     console.log("Ocorreu um erro: ", error);
   }
 };
