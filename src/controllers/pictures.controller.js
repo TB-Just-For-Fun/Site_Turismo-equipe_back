@@ -118,7 +118,7 @@ exports.findByName = async (req, res) => {
   const { nome } = req.query;
 
   try {
-    const pictures = await Picture.find({ name: { $regex: new RegExp(nome, 'i') } });
+    const pictures = await Picture.find({ nome: { $regex: new RegExp(nome, 'i') } });
 
     if (pictures.length < 1) {
       res.status(404).send("Imagem não encontrada!");
