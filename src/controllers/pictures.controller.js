@@ -12,9 +12,18 @@ const storage = getStorage(firebase.app);
 
 exports.create = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { nome } = req.body;
     const { description } = req.body;
+    const { provincia } = req.body;
     const file = req.file;
+
+    if (req.user.role !== "administrador" && req.user.role !== "administrador_supremo") {
+      res.status(401).send("Acesso negado!")
+    }
+
+    if (!file) {
+      res.status(400).json({ message: "Nenhum ficheiro enviado!" })
+    }
 
     // Gerar nome único para o arquivo
     const filename = `${Date.now()}${file.originalname.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`;
@@ -39,13 +48,14 @@ exports.create = async (req, res) => {
         const baseURL = "https://firebasestorage.googleapis.com/v0/b/justforfun-28d85.appspot.com/o/images%2F"
         const downloadURL = `${baseURL}${(await uploadTask).metadata.name}?alt=media`;
 
-        if (!name || !description || !file) {
+        if (!nome || !description || !provincia || !file) {
           res.status(400).send({ message: "Todos os campos são obrigatórios!" });
         }
         else {
           const picture = new Picture({
-            name,
+            nome,
             description,
+            provincia,
             src: downloadURL, // URL da imagem no Firebase Storage
           });
 
@@ -76,6 +86,11 @@ exports.findAll = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
+
+    if (req.user.role !== "administrador" && req.user.role !== "administrador_supremo") {
+      res.status(401).send("Acesso negado!")
+    }
+
     const picture = await Picture.findById(req.params.id);
 
     if (!picture) {
@@ -100,19 +115,19 @@ exports.remove = async (req, res) => {
 };
 
 exports.findByName = async (req, res) => {
-  const { name } = req.query;
+  const { nome } = req.query;
 
   try {
-      const pictures = await Picture.find({ name: { $regex: new RegExp(name, 'i') } });
+    const pictures = await Picture.find({ nome: { $regex: new RegExp(nome, 'i') } });
 
-      if (pictures.length < 1) {
-          res.status(404).send("Imagem não encontrada!");
-      } else {
-          res.status(200).json({ message: "Imagens encontradas: ", pictures });
-      }
+    if (pictures.length < 1) {
+      res.status(404).send("Imagem não encontrada!");
+    } else {
+      res.status(200).json({ message: "Imagens encontradas: ", pictures });
+    }
   } catch (error) {
-      res.status(500).send("Ocorreu um erro ao buscar imagem!")
-      console.log("Erro ao buscar imagens: ", error)
+    res.status(500).send("Ocorreu um erro ao buscar imagem!")
+    console.log("Erro ao buscar imagens: ", error)
   }
 };
 
@@ -120,27 +135,32 @@ exports.findByProvincia = async (req, res) => {
   const { provincia } = req.query;
 
   try {
-      const pictures = await Picture.find({ provincia: { $regex: new RegExp(provincia, 'i') } });
+    const pictures = await Picture.find({ provincia: { $regex: new RegExp(provincia, 'i') } });
 
-      if (pictures.length < 1) {
-          res.status(404).send("Imagens não encontradas!");
-      } else {
-          res.status(200).json({ message: "Imagens encontradas: ", pictures });
-      }
+    if (pictures.length < 1) {
+      res.status(404).send("Imagens não encontradas!");
+    } else {
+      res.status(200).json({ message: "Imagens encontradas: ", pictures });
+    }
   } catch (error) {
-      res.status(500).send("Ocorreu um erro ao buscar imagem!")
-      console.log("Erro ao buscar imagens: ", error)
+    res.status(500).send("Ocorreu um erro ao buscar imagem!")
+    console.log("Erro ao buscar imagens: ", error)
   }
 };
 
 exports.update = async (req, res) => {
-  const {id} = req.params;
+
+  if (req.user.role !== "administrador" && req.user.role !== "administrador_supremo") {
+    res.status(401).send("Acesso negado!")
+  }
+
+  const { id } = req.params;
   try {
-    const UpdatePicture = await Picture.findByIdAndUpdate(id, req.body, {new: true});
+    const UpdatePicture = await Picture.findByIdAndUpdate(id, req.body, { new: true });
 
     res.status(200).json(UpdatePicture);
   }
-  catch(error){
+  catch (error) {
     console.log("Ocorreu um erro: ", error);
   }
 };

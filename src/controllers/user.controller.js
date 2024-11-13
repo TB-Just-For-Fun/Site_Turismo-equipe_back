@@ -318,7 +318,7 @@ async function enviarEmailConfirmacao(email, username) {
             Prepare-se para explorar o mundo de forma divertida e única!\n\n
             Boa viagem! 🧳✈️\n\n
             Faça login agora, com suas credenciais:\n
-            <a href="https://www.seusite.com/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
+            <a href="https://192.168.1.104/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
         `;
 
         await transporter.sendMail({
@@ -631,7 +631,7 @@ async function enviarEmailPromocao(email) {
             Vamos juntos fazer do Just For Fun um lugar ainda mais incrível!\n\n
             👏 Parabéns novamente! 👏\n\n
             Faça login agora, com suas credenciais:\n
-            <a href="https://www.seusite.com/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
+            <a href="https://192.168.1.104/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
         `;
 
         await transporter.sendMail({
