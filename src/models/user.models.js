@@ -23,14 +23,10 @@ const userSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    role: { // novo campo adicionado
+    role: { 
         type: String,
         enum: ['cliente', 'administrador', 'administrador_supremo'], // Enum para definir os tipos de usuário
         default: 'cliente',  
-    },
-    date: {
-        type: Date,
-        default: Date.now
     },
     createdAt: {
         type: Date,

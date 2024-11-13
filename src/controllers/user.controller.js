@@ -34,7 +34,8 @@ userController.login = async (req, res) => {
             return jwt.sign(
                 { 
                     id: user.id,  
-                    role: user.role 
+                    role: user.role
+                     
                 },  
                 process.env.JWT_SECRET,
                 { expiresIn: '2d' }
@@ -56,7 +57,7 @@ userController.login = async (req, res) => {
         console.log('---------------------------------------------')
         console.log('Token role:', user.role, ' - Logado com sucesso'); 
 
-        return res.status(200).send({ message: 'Login bem-sucedido', token });
+        return res.status(200).send({ message: 'Login bem-sucedido', token});
             
     } catch (error) {
         console.error('Erro no login:', error); // Log detalhado
@@ -206,10 +207,10 @@ userController.get = async (req, res) => {
         }
 
         const usuarios = await userModel.find();
-        return res.status(200).send(usuarios);
+        return res.status(200).json(usuarios);
     } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: "Ocorreu um erro", error });
+        return res.status(500).json({ message: "Ocorreu um erro", error });
     }
 };
 
@@ -221,12 +222,12 @@ userController.getById = async (req, res) => {
     try {
         const usuario = await userModel.findById(id);
         if (!usuario) {
-            return res.status(404).send({ message: "Usuário não encontrado" });
+            return res.status(404).json({ message: "Usuário não encontrado" });
         }
-        return res.status(200).send(usuario);
+        return res.status(200).json(usuario);
     } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: "Ocorreu um erro", error });
+        return res.status(500).json({ message: "Ocorreu um erro", error });
     }
 };
 
@@ -235,12 +236,12 @@ userController.getByEmail = async (req, res) => {
     try {
         const usuario = await userModel.findOne(req.query); 
         if (!usuario) {
-            return res.status(404).send({ message: "Usuário não encontrado" });
+            return res.status(404).json({ message: "Usuário não encontrado" });
         }
-        return res.status(200).send(usuario);
+        return res.status(200).json(usuario);
     } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: "Ocorreu um erro", error });
+        return res.status(500).json({ message: "Ocorreu um erro", error });
     }
 };
 
@@ -335,7 +336,6 @@ async function enviarEmailConfirmacao(email, username) {
 }
 
 
-
 // Método PUT para atualização completa pelo ID
 userController.put = async (req, res) => {
     const { id } = req.params;  // ID do usuário
@@ -345,12 +345,12 @@ userController.put = async (req, res) => {
     try {
         const usuarioAtual = await userModel.findById(id);
         if (!usuarioAtual) {
-            return res.status(404).send({ message: "Usuário não encontrado" });
+            return res.status(404).json({ message: "Usuário não encontrado" });
         }
 
         // Verifica os campos permitidos com base no papel do usuário logado
         if (!temPermissaoParaAtualizar(user, updateFields, usuarioAtual)) {
-            return res.status(403).send({ message: "Acesso negado. Você não pode atualizar este usuário." });
+            return res.status(403).json({ message: "Acesso negado. Você não pode atualizar este usuário." });
         }
 
         // Criptografa a senha, se fornecida
@@ -364,14 +364,14 @@ userController.put = async (req, res) => {
         // Envia email de promoção, se aplicável
         await verificarEEnviarEmailPromocao(usuarioAtualizado, usuarioAtual);
 
-        return res.status(200).send({
+        return res.status(200).json({
             message: "Usuário atualizado com sucesso",
             usuario: usuarioAtualizado
         });
 
     } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
+        return res.status(500).json({ message: "Erro ao atualizar o usuário", error });
     }
 };
 
@@ -382,7 +382,7 @@ userController.putByEmail = async (req, res) => {
 
         // Verifica se o email é válido
         if (!validator.isEmail(email)) {
-            return res.status(400).send({ message: "Email inválido" });
+            return res.status(400).json({ message: "Email inválido" });
         }
 
         const usuarioAtual = await userModel.findOne({ email });  // Encontra o usuário pelo email
@@ -390,14 +390,14 @@ userController.putByEmail = async (req, res) => {
         const { user } = req;  // Usuário logado (informações do token)
 
         if (!usuarioAtual) {
-            return res.status(404).send({ message: "Usuário não encontrado" });
+            return res.status(404).json({ message: "Usuário não encontrado" });
         }
 
         // Verifica se o usuário logado está tentando atualizar seu próprio perfil
         const isUpdatingSelf = user.email === usuarioAtual.email;
 
         if (!temPermissaoParaAtualizar(user, updateFields, usuarioAtual, isUpdatingSelf)) {
-            return res.status(403).send({ message: "Acesso negado. Você não pode atualizar este usuário." });
+            return res.status(403).json({ message: "Acesso negado. Você não pode atualizar este usuário." });
         }
 
         if (updateFields.password) {
@@ -410,20 +410,33 @@ userController.putByEmail = async (req, res) => {
             { new: true }
         );
 
+        // Envia email de promoção, se aplicável
         await verificarEEnviarEmailPromocao(usuarioAtualizado, usuarioAtual);
 
-        return res.status(200).send({
+        return res.status(200).json({
             message: "Usuário atualizado com sucesso",
             usuario: usuarioAtualizado
         });
 
     } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
+        return res.status(500).json({ message: "Erro ao atualizar o usuário", error });
     }
 };
 
-// Modifique a função de permissão para considerar a atualização
+// Função para enviar email de promoção
+async function verificarEEnviarEmailPromocao(usuarioAtualizado, usuarioAtual) {
+    // Exemplo de lógica para enviar o email
+    // Se o usuário foi promovido para 'premium' ou fez alguma mudança relevante
+    if (usuarioAtualizado.role !== usuarioAtual.role && usuarioAtualizado.role === 'premium') {
+        console.log(`Enviando email de promoção para ${usuarioAtualizado.email}`);
+        
+        // Enviar o email de promoção, utilizando a função que você já criou
+        await enviarEmailPromocao(usuarioAtualizado.email);
+    }
+}
+
+// Função auxiliar para verificar permissões de atualização
 function temPermissaoParaAtualizar(user, updateFields, usuarioAtual, isUpdatingSelf) {
     // Se o usuário estiver atualizando a si mesmo, permitir atualização de todos os campos, exceto o email
     if (isUpdatingSelf) {
@@ -434,13 +447,13 @@ function temPermissaoParaAtualizar(user, updateFields, usuarioAtual, isUpdatingS
     }
 
     // Lógica adicional para outras permissões (por exemplo, admin)
-    // Exemplo: 
     if (user.role === 'admin') {
         return true; // Admin pode atualizar qualquer usuário
     }
 
     return false; // Acesso negado para outros casos
 }
+
 
 
 // Método PATCH para atualização parcial de um usuário
@@ -452,12 +465,12 @@ userController.patch = async (req, res) => {
     try {
         const usuarioAtual = await userModel.findById(id);
         if (!usuarioAtual) {
-            return res.status(404).send({ message: "Usuário não encontrado" });
+            return res.status(404).json({ message: "Usuário não encontrado" });
         }
 
         // Verifica se o usuário tem permissão para atualizar
         if (!temPermissaoParaAtualizar(user, updateFields, usuarioAtual)) {
-            return res.status(403).send({ message: "Acesso negado. Você não pode atualizar este usuário." });
+            return res.status(403).json({ message: "Acesso negado. Você não pode atualizar este usuário." });
         }
 
         // Criptografa a senha, se fornecida
@@ -468,13 +481,13 @@ userController.patch = async (req, res) => {
         // Atualiza o usuário
         const usuarioAtualizado = await userModel.findByIdAndUpdate(usuarioAtual._id, updateFields, { new: true });
 
-        return res.status(200).send({
+        return res.status(200).json({
             message: "Usuário atualizado com sucesso",
             usuario: usuarioAtualizado
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
+        return res.status(500).json({ message: "Erro ao atualizar o usuário", error });
     }
 }; 
 
@@ -518,7 +531,7 @@ userController.patchByEmail = async (req, res) => {
         
         // Verifica se o email é válido
         if (!validator.isEmail(email)) {
-            return res.status(400).send({ message: "Email inválido" });
+            return res.status(400).json({ message: "Email inválido" });
         }
 
         const updateFields = req.body;
@@ -526,15 +539,15 @@ userController.patchByEmail = async (req, res) => {
         const usuarioAtual = await userModel.findOne({ email });
 
         if (!usuarioAtual) {
-            return res.status(404).send({ message: "Usuário não encontrado" });
+            return res.status(404).json({ message: "Usuário não encontrado" });
         }
 
         if (user.role === 'cliente' && user.email !== usuarioAtual.email) {
-            return res.status(403).send({ message: "Acesso negado. Você só pode atualizar seus próprios dados." });
+            return res.status(403).json({ message: "Acesso negado. Você só pode atualizar seus próprios dados." });
         }
 
         if (user.role === 'administrador' && usuarioAtual.role === 'administrador_supremo') {
-            return res.status(403).send({ message: "Acesso negado. Você não pode atualizar o administrador supremo." });
+            return res.status(403).json({ message: "Acesso negado. Você não pode atualizar o administrador supremo." });
         }
 
         const camposPermitidos = {
@@ -545,11 +558,11 @@ userController.patchByEmail = async (req, res) => {
 
         for (const campo in updateFields) {
             if (!camposPermitidos[user.role].includes(campo)) {
-                return res.status(403).send({ message: `Acesso negado. Você não pode atualizar o campo "${campo}".` });
+                return res.status(403).json({ message: `Acesso negado. Você não pode atualizar o campo "${campo}".` });
             }
 
             if (campo === 'email' && user.role === 'administrador' && usuarioAtual.role === 'administrador') {
-                return res.status(403).send({ message: "Acesso negado. Administradores não podem alterar o email de outros administradores." });
+                return res.status(403).json({ message: "Acesso negado. Administradores não podem alterar o email de outros administradores." });
             }
         }
 
@@ -584,13 +597,13 @@ userController.patchByEmail = async (req, res) => {
             await enviarEmailAlteracaoSenha(usuarioAtualizado.email); // Corrigido para enviar o email ao novo email
         }
 
-        return res.status(200).send({
+        return res.status(200).json({
             message: "Usuário atualizado com sucesso",
             usuario: usuarioSemSenha
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: "Erro ao atualizar o usuário", error });
+        return res.status(500).json({ message: "Erro ao atualizar o usuário", error });
     }
 };
 
@@ -672,59 +685,57 @@ async function enviarEmailAlteracaoSenha(email) {
 }
 
 
-
-
-// Método DELETE para deletar um usuário
+ // Método DELETE para deletar um usuário
 userController.apagar = async (req, res) => {
     const { id } = req.params;
     const { role, _id: userId } = req.user;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).send({ message: "ID inválido" });
+        return res.status(400).json({ message: "ID inválido" });
     }
 
     try {
         const usuarioDeletado = await userModel.findById(id);
         if (!usuarioDeletado) {
-            return res.status(404).send({ message: "Usuário não encontrado" });
+            return res.status(404).json({ message: "Usuário não encontrado" });
         }
 
         // Admin Supremo pode deletar qualquer conta, incluindo a própria
         if (role === 'administrador_supremo') {
             await userModel.findByIdAndDelete(id);
-            return res.status(200).send({ message: "Usuário deletado com sucesso" });
+            return res.status(200).json({ message: "Usuário deletado com sucesso" });
         }
 
         // Administrador (que não é supremo)
         if (role === 'administrador') {
             // Verifica se o admin está tentando deletar outra conta de admin
             if (usuarioDeletado.role === 'administrador' && usuarioDeletado._id.toString() !== userId.toString()) {
-                return res.status(403).send({ message: "Acesso negado. Apenas o administrador supremo pode deletar contas de outros administradores." });
+                return res.status(403).json({ message: "Acesso negado. Apenas o administrador supremo pode deletar contas de outros administradores." });
             }
 
             // Admin pode deletar a própria conta ou a conta de clientes
             if (usuarioDeletado._id.toString() === userId.toString() || usuarioDeletado.role === 'cliente') {
                 await userModel.findByIdAndDelete(id);
-                return res.status(200).send({ message: "Usuário deletado com sucesso" });
+                return res.status(200).json({ message: "Usuário deletado com sucesso" });
             }
 
-            return res.status(403).send({ message: "Acesso negado. Você não pode deletar esse usuário." });
+            return res.status(403).json({ message: "Acesso negado. Você não pode deletar esse usuário." });
         }
 
         // Cliente pode deletar apenas a própria conta
         if (role === 'cliente') {
             if (usuarioDeletado._id.toString() === userId.toString()) {
                 await userModel.findByIdAndDelete(id);
-                return res.status(200).send({ message: "Conta deletada com sucesso" });
+                return res.status(200).json({ message: "Conta deletada com sucesso" });
             }
 
-            return res.status(403).send({ message: "Acesso negado. Você só pode deletar a sua própria conta." });
+            return res.status(403).json({ message: "Acesso negado. Você só pode deletar a sua própria conta." });
         }
 
-        return res.status(403).send({ message: "Acesso negado." });
+        return res.status(403).json({ message: "Acesso negado." });
     } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: "Erro ao deletar usuário", error });
+        return res.status(500).json({ message: "Erro ao deletar usuário", error });
     }
 };
 
@@ -735,7 +746,7 @@ userController.apagarByEmail = async (req, res) => {
 
         // Verificação de email válido
         if (!validator.isEmail(email)) {
-            return res.status(400).send({ message: "Email inválido" });
+            return res.status(400).json({ message: "Email inválido" });
         }
 
         const { role, email: userEmail } = req.user;  // Pega o papel e o email do usuário logado
@@ -743,41 +754,41 @@ userController.apagarByEmail = async (req, res) => {
         const usuarioDeletado = await userModel.findOne({ email });
         
         if (!usuarioDeletado) {
-            return res.status(404).send({ message: "Usuário não encontrado" });
+            return res.status(404).json({ message: "Usuário não encontrado" });
         }
 
         // Admin Supremo pode deletar qualquer conta
         if (role === 'administrador_supremo') {
             await userModel.findOneAndDelete({ email });
-            return res.status(200).send({ message: "Usuário deletado com sucesso" });
+            return res.status(200).json({ message: "Usuário deletado com sucesso" });
         }
 
         // Administrador (não supremo) só pode deletar sua própria conta ou contas de clientes
         if (role === 'administrador') {
             if (usuarioDeletado.role === 'administrador' && usuarioDeletado.email !== userEmail) {
-                return res.status(403).send({ message: "Acesso negado. Apenas o administrador supremo pode deletar outros administradores." });
+                return res.status(403).json({ message: "Acesso negado. Apenas o administrador supremo pode deletar outros administradores." });
             }
 
             if (usuarioDeletado.email === userEmail || usuarioDeletado.role === 'cliente') {
                 await userModel.findOneAndDelete({ email });
-                return res.status(200).send({ message: "Usuário deletado com sucesso" });
+                return res.status(200).json({ message: "Usuário deletado com sucesso" });
             }
 
-            return res.status(403).send({ message: "Acesso negado. Você não pode deletar este usuário." });
+            return res.status(403).json({ message: "Acesso negado. Você não pode deletar este usuário." });
         }
 
         // Cliente pode deletar apenas a própria conta
         if (role === 'cliente' && usuarioDeletado.email === userEmail) {
             await userModel.findOneAndDelete({ email });
-            return res.status(200).send({ message: "Conta deletada com sucesso" });
+            return res.status(200).json({ message: "Conta deletada com sucesso" });
         }
 
         // Caso não seja permitido
-        return res.status(403).send({ message: "Acesso negado. Você não tem permissão para realizar esta operação" });
+        return res.status(403).json({ message: "Acesso negado. Você não tem permissão para realizar esta operação" });
 
     } catch (error) {
         console.error(error);
-        return res.status(500).send({ message: "Erro ao deletar usuário", error });
+        return res.status(500).json({ message: "Erro ao deletar usuário", error });
     }
 };
 
