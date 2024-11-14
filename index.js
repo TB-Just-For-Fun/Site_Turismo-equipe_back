@@ -53,6 +53,8 @@ app.use('/notificacoes', notificacoesRoutes);
     //rota de reservas
 app.use("/api_reservas/calendario", reservaRoute);
 app.use("/api_reservas", reservaRoute);
+app.use('/api', reservaRoute); // A rota ficará acessível em /api/reservas
+
     //rota de pacotes
 app.use("/api_pacotes", packRoute);
     //rota de usuarios
