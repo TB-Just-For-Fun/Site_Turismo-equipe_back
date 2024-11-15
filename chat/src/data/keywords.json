@@ -1,0 +1,19 @@
+[
+    {
+        "name": "exemplo",
+        "category": "categoria1",
+        "synonyms": ["sinonimo1", "sinonimo2"]
+    },
+    {
+        "name": "teste",
+        "category": "categoria2",
+        "synonyms": ["teste1", "teste2"]
+    },
+    { "name": "oi", "category": "greetings" },
+    { "name": "olá", "category": "greetings" },
+    { "name": "bom dia", "category": "greetings" },
+    { "name": "boa tarde", "category": "greetings" },
+    { "name": "reserva", "category": "reservations" },
+    { "name": "hotel", "category": "hotels" },
+    { "name": "login", "category": "login" }
+]

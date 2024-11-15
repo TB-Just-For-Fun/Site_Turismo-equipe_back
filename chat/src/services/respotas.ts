@@ -6,7 +6,7 @@ export const findResponse = async (category: string): Promise<string> => {
         
         // Verifica se a resposta foi encontrada
         if (response) {
-            return response.userMessage; // Retorna a mensagem do usuário se encontrada
+            return response.message; // Retorna a mensagem do usuário se encontrada
         } else {
             // Retorna uma mensagem padrão se não encontrar a resposta
             return "Desculpe, não consegui encontrar uma resposta apropriada.";

@@ -1,7 +1,3 @@
-// seed.ts
-import mongoose from 'mongoose';
-import Response from './models/chatModel'; // Importe o modelo Response
-import connectDatabase from './database/db.js'; // Importe sua conexão com o banco de dados
 // Respostas automáticas e variações
 export const responses = {
     greetings: [
@@ -58,51 +54,105 @@ export const responses = {
         "📧 Quer falar diretamente com nossa equipe? Visite a página de contato e mande sua mensagem.",
         "☎️ Para suporte adicional, entre em contato conosco por meio do formulário disponível no site.",
         "📲 Pode nos chamar no chat ou visitar a nossa página de contato para assistência personalizada."
-    ],
-    calendar: [
-        `📅 Para ver a disponibilidade de pacotes, consulte nosso 
-        <a href='https://justforfund.com/calendario'
-           style="display: inline-block; color: #ffffff; background-color: #ff9933; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold;"
-           target="_blank">Calendário</a>.`,
-        "📅 Confira o calendário de eventos e pacotes disponíveis na nossa página e escolha a melhor data para sua viagem.",
-        "📅 Agende seu próximo passeio conforme nosso calendário de disponibilidade. Escolha já a data ideal!",
-        "📅 Explore o calendário de pacotes turísticos e veja as datas disponíveis para reservar seu próximo destino.",
-        "📆 Quer saber as datas disponíveis para sua viagem? Consulte nosso calendário online e faça sua reserva."
-    ],
-    additionalInfo: [
-        `🔍 Veja mais sobre nossos serviços e pacotes especiais em: 
-        <a href='https://justforfund.com/servicos'
-           style="display: inline-block; color: #ffffff; background-color: #ff66b2; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold;"
-           target="_blank">Serviços</a>.`,
-        "💼 Temos mais detalhes sobre nossos pacotes e serviços na página de informações adicionais.",
-        "📖 Saiba mais sobre os serviços e opções de pacotes disponíveis acessando nosso site.",
-        "📝 Quer mais informações sobre nossos pacotes turísticos? Confira a página de serviços e escolha o melhor para você.",
-        "🔍 Está buscando mais detalhes sobre nossos serviços? Visite a página de serviços e descubra tudo o que oferecemos."
     ]
 };
-// Função para popular o banco de dados com respostas
-async function seedDatabase() {
-    try {
-        await connectDatabase(); // Conectar ao banco de dados
-        // Limpe a coleção antes de inserir novos dados
-        await Response.deleteMany({});
-        console.log("Coleção 'responses' limpa!");
-        for (const [category, messages] of Object.entries(responses)) {
-            const response = new Response({
-                category,
-                messages
-            });
-            await response.save();
-            console.log(`Respostas para a categoria "${category}" salvas com sucesso.`);
-        }
-        console.log("Todas as respostas foram salvas no banco de dados!");
+export const keywordResponses = [
+    {
+        name: "oi",
+        category: "greetings",
+        response: "Olá! Como posso ajudá-lo hoje?"
+    },
+    {
+        name: "olá",
+        category: "greetings",
+        response: "Oi! Em que posso te ajudar?"
+    },
+    {
+        name: "reserva",
+        category: "reservations",
+        response: "Você gostaria de fazer uma reserva? Podemos te ajudar com isso!"
+    },
+    {
+        name: "hotel",
+        category: "services",
+        response: "Temos ótimos hotéis disponíveis. Gostaria de saber mais sobre eles?"
+    },
+    {
+        name: "pacote",
+        category: "services",
+        response: "Temos pacotes especiais para você! Quer ver as opções?"
+    },
+    {
+        name: "sítios turísticos",
+        category: "tourism",
+        response: "Angola tem maravilhas incríveis. Você gostaria de saber mais sobre os sítios turísticos?"
+    },
+    {
+        name: "ajuda",
+        category: "help",
+        response: "Claro! Como posso te ajudar?"
     }
-    catch (error) {
-        console.error("Erro ao salvar as respostas:", error);
+];
+async function getResponse(userInput) {
+    const normalizedInput = userInput.trim().toLowerCase();
+    // Verifique se a entrada corresponde a uma saudação, como "oi" ou "olá"
+    if (normalizedInput.includes("oi") || normalizedInput.includes("olá")) {
+        return "Olá! Como posso ajudá-lo hoje?";
     }
-    finally {
-        mongoose.connection.close(); // Feche a conexão após a inserção
-    }
+    // Se a saudação não for encontrada, procure outras respostas
+    const randomCategoryKey = Object.keys(responses)[Math.floor(Math.random() * Object.keys(responses).length)];
+    const randomResponse = responses[randomCategoryKey][Math.floor(Math.random() * responses[randomCategoryKey].length)];
+    return randomResponse;
 }
-// Chame a função de seed
-seedDatabase();
+// Simulando uma chamada com input
+async function respondToUser(userInput) {
+    const response = await getResponse(userInput);
+    console.log(response);
+}
+// seed.ts - Modelo de treinamento com intenções e sinônimos
+export const intents = [
+    {
+        intent: "greeting",
+        examples: [
+            "oi", "olá", "oi, tudo bem?", "olá, como vai?", "bom dia", "boa tarde", "boa noite"
+        ],
+        response: "Olá! Como posso ajudá-lo hoje?"
+    },
+    {
+        intent: "location",
+        examples: [
+            "onde estão?", "onde vocês ficam?", "qual a localização?", "onde fica a sede?"
+        ],
+        response: "Estamos localizados no Lubango, província da Huíla, Angola. Como posso te ajudar mais?"
+    },
+    {
+        intent: "tourism",
+        examples: [
+            "turismo", "pacotes turísticos", "pontos turísticos", "onde visitar", "lugares interessantes"
+        ],
+        response: "Temos pacotes turísticos incríveis! Visite o Namibe, a Humpata, e o Lubango. Quer mais detalhes?"
+    },
+    {
+        intent: "reservation",
+        examples: [
+            "reservas", "como posso reservar?", "fazer uma reserva", "quero reservar", "como faço minha reserva?"
+        ],
+        response: "Você pode fazer sua reserva diretamente pelo nosso site ou clicando [aqui]. Como posso te ajudar com sua reserva?"
+    },
+    {
+        intent: "help",
+        examples: [
+            "ajuda", "informações", "preciso de ajuda", "me ajude", "o que vocês fazem?"
+        ],
+        response: "Eu posso te ajudar a encontrar pacotes turísticos, fazer reservas e responder dúvidas sobre nossa localização."
+    },
+    {
+        intent: "goodbye",
+        examples: [
+            "tchau", "adeus", "até logo", "nos vemos", "obrigado", "valeu"
+        ],
+        response: "Até mais! Espero ter ajudado. Volte sempre!"
+    },
+];
+// Exemplo de chamada
+respondToUser("oi").then(console.log); // Isso deve retornar uma resposta para "oi"

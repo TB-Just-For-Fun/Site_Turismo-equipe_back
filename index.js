@@ -7,7 +7,7 @@ const app = express();
 require("dotenv").config();
 require("./src/database/db");
 
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
 const pictureRouter = require("./src/routes/picture.route");
 const packRoute = require("./src/routes/pack.route");
@@ -27,47 +27,46 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-// bodyparser
+//bodyparser
 app.use(bodyParser.json());
 
-// Configuração do CORS para aceitar qualquer origem dinamicamente
+//usando o cors
 app.use(cors({
-    origin: (origin, callback) => {
-        // Permite qualquer origem
-        callback(null, origin || '*');
-    },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    origin: 'http://localhost:3000', 
     credentials: true
 }));
 
-// Adiciona o cookie-parser para habilitar a leitura dos cookies
+
+//adiciona o cookie-parser para habilitar a leitura dos cookies
 app.use(cookieParser()); // Aqui está o cookie-parser
 
-// Middleware para adicionar os headers necessários ao CORS
+//adicionando o header ao servidor
 app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    res.header('Access-Control-Allow-Origin', origin || '*'); // Define a origem da requisição
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3000'); // Domínio do front-end
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
 
-// Rotas
-// Rota principal
-app.get("/", (req, res) => { res.json("Just For Fun, all rights reserved."); });
-// Rota de imagens
+
+//rotas
+    //rota principal
+app.get("/", (req, res) => { res.json("Just For Fun, all rights reserved.") });
+    //rota de imagens
 app.use("/pictures", pictureRouter);
-// Rota de notificações
+    //rota de notificações
 app.use('/notificacoes', notificacoesRoutes);
-// Rota de reservas
+    //rota de reservas
 app.use("/api_reservas/calendario", reservaRoute);
 app.use("/api_reservas", reservaRoute);
-// Rota de pacotes
+app.use('/api', reservaRoute); // A rota ficará acessível em /api/reservas
+
+    //rota de pacotes
 app.use("/api_pacotes", packRoute);
-// Rota de usuários
+    //rota de usuarios
 app.use("/api_usuarios", userRoute);
-// Rota de feedback
+    //rota de feedback
 app.use('/api/feedback', feedbackRoutes);
 
 app.listen(port, () => {
