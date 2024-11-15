@@ -7,7 +7,7 @@ const app = express();
 require("dotenv").config();
 require("./src/database/db");
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 const pictureRouter = require("./src/routes/picture.route");
 const packRoute = require("./src/routes/pack.route");
@@ -27,44 +27,47 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-//bodyparser
+// bodyparser
 app.use(bodyParser.json());
 
-//usando o cors
+// Configuração do CORS para aceitar qualquer origem dinamicamente
 app.use(cors({
-    origin: '*', 
+    origin: (origin, callback) => {
+        // Permite qualquer origem
+        callback(null, origin || '*');
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true
 }));
 
-
-//adiciona o cookie-parser para habilitar a leitura dos cookies
+// Adiciona o cookie-parser para habilitar a leitura dos cookies
 app.use(cookieParser()); // Aqui está o cookie-parser
 
-//adicionando o header ao servidor
+// Middleware para adicionar os headers necessários ao CORS
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*'); // Domínio do front-end
+    const origin = req.headers.origin;
+    res.header('Access-Control-Allow-Origin', origin || '*'); // Define a origem da requisição
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
 
-
-//rotas
-    //rota principal
-app.get("/", (req, res) => { res.json("Just For Fun, all rights reserved.") });
-    //rota de imagens
+// Rotas
+// Rota principal
+app.get("/", (req, res) => { res.json("Just For Fun, all rights reserved."); });
+// Rota de imagens
 app.use("/pictures", pictureRouter);
-    //rota de notificações
+// Rota de notificações
 app.use('/notificacoes', notificacoesRoutes);
-    //rota de reservas
+// Rota de reservas
 app.use("/api_reservas/calendario", reservaRoute);
 app.use("/api_reservas", reservaRoute);
-    //rota de pacotes
+// Rota de pacotes
 app.use("/api_pacotes", packRoute);
-    //rota de usuarios
+// Rota de usuários
 app.use("/api_usuarios", userRoute);
-    //rota de feedback
+// Rota de feedback
 app.use('/api/feedback', feedbackRoutes);
 
 app.listen(port, () => {
