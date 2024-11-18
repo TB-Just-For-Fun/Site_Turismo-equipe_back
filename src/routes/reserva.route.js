@@ -8,5 +8,9 @@ router.get('/reservas/:id', reservaController.getReservaById);
 router.get('/calendario', reservaController.obterCalendario);
 router.put('/reservas/:id', reservaController.put);
 router.delete('/reservas/:id', reservaController.apagar);
+router.post('/calendario', reservaController.obterCalendario);
+router.get('/calendario', reservaController.obterCalendario);
+
+
 
 module.exports = router;

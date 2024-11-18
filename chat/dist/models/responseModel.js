@@ -20,34 +20,38 @@ export const responses = {
         "💼 Somos especialistas em turismo em Angola, focados em criar experiências inesquecíveis.",
         "🌟 Nossa missão é garantir que você tenha as melhores memórias de viagem por Angola.",
         "🚀 Explore o melhor de Angola com o Just for Fund – seu guia de aventuras.",
-        "🌄 Quer descobrir o que Angola tem de melhor? Estamos aqui para te ajudar!"
+        "🌄 Quer descobrir o que Angola tem de melhor? Estamos aqui para te ajudar!",
+        "💡 Nós oferecemos pacotes turísticos exclusivos para os locais mais fascinantes de Angola."
     ],
     location: [
         "📍 Estamos localizados em Lubango, na província da Huíla, cercados pelas paisagens incríveis da Serra da Chela.",
         "🌄 Nossa base é em Lubango, no coração da Huíla, próximo a maravilhas como a Fenda da Tundavala e o Cristo Rei.",
         "🏞️ Se você estiver por Lubango, visite nossa sede e explore os pontos turísticos nas proximidades, como a Humpata e o Namibe.",
         "📍 Estamos localizados no Lubango, pronto para te guiar pelas maravilhas do sul de Angola.",
-        "🚗 A nossa localização é estratégica para visitar os parques nacionais e praias do Namibe."
+        "🚗 Nossa localização é estratégica para visitar os parques nacionais e praias do Namibe.",
+        "🌿 Em Lubango, você encontrará acesso fácil a belezas naturais como a Cascata da Huíla."
     ],
     services: [
         "🛏️ Oferecemos pacotes turísticos, reservas de hotéis e passeios guiados em várias regiões de Angola.",
         "🚗 Nossos serviços incluem passeios guiados, reservas de hospedagem e aventuras personalizadas.",
         "📦 Você pode contar conosco para hospedagem, passeios e pacotes personalizados para a sua viagem.",
         "🌄 Planeje sua próxima aventura em Angola conosco! Reservas de hotéis, pacotes turísticos e muito mais.",
-        "📅 Faça já sua reserva com a gente e explore o melhor de Angola!"
+        "📅 Faça já sua reserva com a gente e explore o melhor de Angola!",
+        "🔍 Oferecemos roteiros personalizados para explorar o melhor do Namibe e da Serra da Leba."
     ],
     tourism: [
         "🌍 Angola oferece destinos incríveis como a Fenda da Tundavala, o Deserto do Namibe e as Quedas de Kalandula.",
         "🏞️ Que tal conhecer o Parque Nacional da Quiçama ou as praias do Namibe? Posso te ajudar a planejar.",
         "🌊 Se você adora o mar, temos pacotes que exploram as praias intocadas de Moçâmedes e Baía dos Tigres.",
         "🌄 As maravilhas naturais de Angola, como o Monte Moco e o Planalto da Huíla, são destinos imperdíveis.",
-        "🚶‍♂️ Vamos explorar o turismo em Angola? Oferecemos tours guiados para os melhores destinos."
+        "🚶‍♂️ Vamos explorar o turismo em Angola? Oferecemos tours guiados para os melhores destinos.",
+        "🦓 Descubra os animais selvagens nos parques do Namibe e Quiçama!"
     ],
     reservations: [
         `📝 Faça suas reservas diretamente no nosso site. Acesse nossa página de 
-      <a href='https://justforfund.com/reservas' 
-         style="display: inline-block; color: #ffffff; background-color: #0066cc; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold;"
-         target="_blank">Reservas</a>.`,
+    <a href='https://justforfund.com/reservas' 
+       style="display: inline-block; color: #ffffff; background-color: #0066cc; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold;"
+       target="_blank">Reservas</a>.`,
         "🛎️ Pronto para fazer uma reserva? É só acessar nosso site e garantir sua vaga nas melhores aventuras.",
         "📅 Precisa reservar um hotel ou um pacote turístico? Acesse nossa plataforma de reservas e escolha seu destino.",
         "📝 Quer garantir sua viagem? Nosso sistema de reservas online facilita o planejamento da sua viagem.",
@@ -55,9 +59,9 @@ export const responses = {
     ],
     contact: [
         `📞 Precisa de mais informações? Visite nossa página de 
-      <a href='https://justforfund.com/contato'
-         style="display: inline-block; color: #ffffff; background-color: #00cc66; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold;"
-         target="_blank">Contato</a>.`,
+    <a href='https://justforfund.com/contato'
+       style="display: inline-block; color: #ffffff; background-color: #00cc66; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold;"
+       target="_blank">Contato</a>.`,
         "📞 Se precisar de mais assistência, nossa página de contato está disponível para ajudar.",
         "📧 Quer falar diretamente com nossa equipe? Visite a página de contato e mande sua mensagem.",
         "☎️ Para suporte adicional, entre em contato conosco por meio do formulário disponível no site.",
@@ -65,9 +69,9 @@ export const responses = {
     ],
     calendar: [
         `📅 Para ver a disponibilidade de pacotes, consulte nosso 
-      <a href='https://justforfund.com/calendario'
-         style="display: inline-block; color: #ffffff; background-color: #ff9933; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold;"
-         target="_blank">Calendário</a>.`,
+    <a href='https://justforfund.com/calendario'
+       style="display: inline-block; color: #ffffff; background-color: #ff9933; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold;"
+       target="_blank">Calendário</a>.`,
         "📅 Confira o calendário de eventos e pacotes disponíveis na nossa página e escolha a melhor data para sua viagem.",
         "📅 Agende seu próximo passeio conforme nosso calendário de disponibilidade. Escolha já a data ideal!",
         "📅 Explore o calendário de pacotes turísticos e veja as datas disponíveis para reservar seu próximo destino.",
@@ -119,6 +123,275 @@ export const responses = {
     help: [
         "Aqui estão algumas opções de como posso te ajudar: \n1. Conhecer sobre nós \n2. Ver pacotes turísticos \n3. Agendar uma reserva",
     ],
+    randomResponses: [
+        "🤔 Essa é uma pergunta interessante! Que tal explorar mais sobre os pontos turísticos?",
+        "😊 Não tenho certeza sobre isso, mas posso ajudar com informações sobre turismo.",
+        "🙃 Essa é nova! Enquanto isso, que tal conhecer a Fenda da Tundavala?",
+        "🌟 Que pergunta única! Vamos falar sobre as maravilhas de Angola?",
+        "🎯 Enquanto eu verifico sua dúvida, que tal conferir nossos pacotes especiais?"
+    ]
 };
+export const faqQuestions = [
+    // Pacotes turísticos (tourism)
+    {
+        question: "Quais são os pacotes turísticos disponíveis?",
+        category: "tourism"
+    },
+    {
+        question: "O que está incluído nos pacotes turísticos para o Namibe?",
+        category: "tourism"
+    },
+    {
+        question: "Existem descontos para grupos em pacotes turísticos?",
+        category: "tourism"
+    },
+    {
+        question: "Quais atividades estão disponíveis nos pacotes para a Humpata?",
+        category: "tourism"
+    },
+    {
+        question: "Os pacotes turísticos incluem guias?",
+        category: "tourism"
+    },
+    {
+        question: "Os pacotes turísticos incluem refeições?",
+        category: "tourism"
+    },
+    {
+        question: "Como faço para personalizar um pacote turístico?",
+        category: "tourism"
+    },
+    {
+        question: "Há pacotes turísticos para famílias?",
+        category: "tourism"
+    },
+    {
+        question: "Qual é o melhor pacote para explorar Lubango?",
+        category: "tourism"
+    },
+    {
+        question: "Quais os pacotes disponíveis para estudantes?",
+        category: "tourism"
+    },
+    {
+        question: "É possível modificar um pacote turístico após a compra?",
+        category: "tourism"
+    },
+    {
+        question: "Quais são os pacotes turísticos mais populares?",
+        category: "tourism"
+    },
+    // Reservas (reservations)
+    {
+        question: "Como faço para fazer uma reserva?",
+        category: "reservations"
+    },
+    {
+        question: "É possível cancelar uma reserva?",
+        category: "reservations"
+    },
+    {
+        question: "Quais são as políticas de cancelamento de reserva?",
+        category: "reservations"
+    },
+    {
+        question: "Como confirmar uma reserva?",
+        category: "reservations"
+    },
+    {
+        question: "Quais formas de pagamento são aceitas para reservas?",
+        category: "reservations"
+    },
+    {
+        question: "É necessário pagar um sinal para reservar?",
+        category: "reservations"
+    },
+    {
+        question: "Posso transferir minha reserva para outra pessoa?",
+        category: "reservations"
+    },
+    {
+        question: "Existe algum custo adicional para reservas de última hora?",
+        category: "reservations"
+    },
+    {
+        question: "Posso reservar pacotes com antecedência?",
+        category: "reservations"
+    },
+    {
+        question: "Como modificar uma reserva já realizada?",
+        category: "reservations"
+    },
+    // Hotéis (hotels)
+    {
+        question: "Quais são os melhores hotéis em Lubango?",
+        category: "hotels"
+    },
+    {
+        question: "Quais hotéis oferecem café da manhã incluído?",
+        category: "hotels"
+    },
+    {
+        question: "Existem hotéis com piscina na Humpata?",
+        category: "hotels"
+    },
+    {
+        question: "Os hotéis têm Wi-Fi gratuito?",
+        category: "hotels"
+    },
+    {
+        question: "Quais hotéis são pet-friendly?",
+        category: "hotels"
+    },
+    {
+        question: "Há hotéis próximos aos parques nacionais em Angola?",
+        category: "hotels"
+    },
+    {
+        question: "Quais hotéis são recomendados para famílias?",
+        category: "hotels"
+    },
+    {
+        question: "Posso fazer uma reserva diretamente com o hotel?",
+        category: "hotels"
+    },
+    {
+        question: "Quais hotéis possuem restaurantes de alta qualidade?",
+        category: "hotels"
+    },
+    {
+        question: "Existem hotéis que oferecem transporte gratuito para o aeroporto?",
+        category: "hotels"
+    },
+    // Locais (location)
+    {
+        question: "Quais são os melhores locais para visitar em Angola?",
+        category: "location"
+    },
+    {
+        question: "Quais as principais atrações no Namibe?",
+        category: "location"
+    },
+    {
+        question: "Há cachoeiras próximas ao Lubango?",
+        category: "location"
+    },
+    {
+        question: "O que posso fazer no Parque Nacional da Quiçama?",
+        category: "location"
+    },
+    {
+        question: "Quais sítios turísticos são recomendados para um dia?",
+        category: "location"
+    },
+    {
+        question: "Há atividades para crianças nos sítios turísticos?",
+        category: "location"
+    },
+    {
+        question: "Existem trilhas para caminhada nas redondezas?",
+        category: "location"
+    },
+    {
+        question: "Onde posso ver vida selvagem em Angola?",
+        category: "location"
+    },
+    {
+        question: "Qual é a melhor época para visitar o Parque Nacional de Iona?",
+        category: "location"
+    },
+    // Contato (contact)
+    {
+        question: "Como faço para entrar em contato com vocês?",
+        category: "contact"
+    },
+    {
+        question: "Qual é o número de telefone para suporte?",
+        category: "contact"
+    },
+    {
+        question: "Vocês têm um endereço de e-mail para atendimento?",
+        category: "contact"
+    },
+    {
+        question: "Onde posso encontrar o escritório de vocês?",
+        category: "contact"
+    },
+    {
+        question: "Quais são os horários de atendimento?",
+        category: "contact"
+    },
+    {
+        question: "Há suporte disponível em outros idiomas?",
+        category: "contact"
+    },
+    // Serviços (services)
+    {
+        question: "Quais são as opções de transporte disponíveis?",
+        category: "services"
+    },
+    {
+        question: "Vocês oferecem serviços de transfer do aeroporto?",
+        category: "services"
+    },
+    {
+        question: "É possível alugar um carro com motorista?",
+        category: "services"
+    },
+    {
+        question: "Há opções de transporte para grandes grupos?",
+        category: "services"
+    },
+    {
+        question: "Vocês fornecem equipamentos para atividades ao ar livre?",
+        category: "services"
+    },
+    {
+        question: "Há opções de transporte para os parques naturais?",
+        category: "services"
+    },
+    // Feedback
+    {
+        question: "Como posso enviar feedback sobre os serviços?",
+        category: "feedback"
+    },
+    {
+        question: "Posso sugerir melhorias para os pacotes turísticos?",
+        category: "feedback"
+    },
+    {
+        question: "Como minha opinião será utilizada por vocês?",
+        category: "feedback"
+    },
+    {
+        question: "Onde posso deixar uma avaliação pública?",
+        category: "feedback"
+    },
+    {
+        question: "Vocês têm algum sistema de recompensas para feedbacks?",
+        category: "feedback"
+    },
+    // Outros
+    {
+        question: "Quais são os horários de funcionamento?",
+        category: "hours"
+    },
+    {
+        question: "Vocês oferecem promoções ou descontos sazonais?",
+        category: "general"
+    },
+    {
+        question: "Há guias turísticos que falam inglês?",
+        category: "services"
+    },
+    {
+        question: "Como posso fazer uma reclamação formal?",
+        category: "general"
+    },
+    {
+        question: "Quais são as condições para pacotes exclusivos?",
+        category: "general"
+    }
+];
 const Response = mongoose.model('Response', ResponseSchema);
 export default Response;

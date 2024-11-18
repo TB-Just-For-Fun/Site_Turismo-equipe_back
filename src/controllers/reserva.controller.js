@@ -1,14 +1,14 @@
+
+const notificacaoController = require('../controllers/notificacoes.controller');
+const { notificarNovaReserva } = require('../controllers/notificacoes.controller'); 
 const mongoose = require('mongoose');
 const Reserva = require('../models/reserva'); 
 const moment = require('moment-timezone');
 
 const reservaController = {};
 
-
 reservaController.create = async (req, res) => {
     const { nome, email, dataInicio, dataFim, numAdultos, numCriancas } = req.body;
-
-    // Verificar se todos os campos estão preenchidos
     if (!nome || !email || !dataInicio || !dataFim || numAdultos === undefined || numCriancas === undefined) {
         return res.status(400).send({ message: "Todos os campos são obrigatórios!" });
     }
@@ -24,14 +24,29 @@ reservaController.create = async (req, res) => {
             numAdultos,
             numCriancas,
         });
-        return res.status(201).send({ message: "Reserva criada com sucesso", reserva: reservaInstance });
+
+        // Enviar e-mail de notificação
+        const mensagem = `
+            Olá ${nome}, 
+            
+            Sua reserva foi confirmada com sucesso! Aqui estão os detalhes:
+            - ID da Reserva: ${IDReserva}
+            - Data de Início: ${dataInicio}
+            - Data de Fim: ${dataFim}
+
+            Agradecemos pela sua reserva e entraremos em contato em breve para mais informações.
+        `;
+        await notificarNovaReserva(email, mensagem);
+
+        return res.status(201).send({
+            message: "Reserva criada com sucesso! Verifique seu e-mail para mais detalhes.",
+            reserva: reservaInstance,
+        });
     } catch (error) {
-        console.error('Erro ao criar a reserva:', error);  // Log detalhado do erro
+        console.error('Erro ao criar a reserva:', error);
         return res.status(500).send({ message: "Erro ao criar a reserva", error: error.message });
     }
 };
-
-
 
 reservaController.getReservaById = async (req, res) => {
     const { id } = req.params;
@@ -50,7 +65,6 @@ reservaController.getReservaById = async (req, res) => {
     }
 };
 
-
 reservaController.obterCalendario = async (req, res) => {
     try {
         const reservas = await Reserva.find();
@@ -64,7 +78,6 @@ reservaController.obterCalendario = async (req, res) => {
         return res.status(500).json({ message: "Erro ao obter o calendário", error: error.message });
     }
 };
-
 
 reservaController.put = async (req, res) => {
     const { id } = req.params;
@@ -96,7 +109,6 @@ reservaController.put = async (req, res) => {
         return res.status(500).send({ message: "Erro ao atualizar a reserva", error });
     }
 };
-
 
 reservaController.apagar = async (req, res) => {
     const { id } = req.params;

@@ -1,20 +1,30 @@
 import { Server } from 'socket.io';
+import { faqQuestions } from './faqQuestions';
 import { keywordResponses } from './seed';
 import { responses } from './models/responseModel'; // Importando o responseModel
 const responseModel = responses;
-const intents = responseModel;
 async function findResponse(userMessage) {
     const normalizedMessage = userMessage.toLowerCase();
     console.log('Mensagem do usuário:', normalizedMessage);
     // Verifica se a mensagem corresponde a uma saudação
-    const greetings = ["oi", "olá", "oi!"];
+    const greetings = ["oi", "olá", "ola", "hello", "hi", "Ola", "Olá", "OLA", "OLÁ", "oi!"];
     for (const greeting of greetings) {
         if (normalizedMessage.includes(greeting)) {
             console.log("Resposta de saudação encontrada.");
-            return responseModel.greetings[0]; // Utiliza a saudação do responseModel
+            return responseModel.greetings[0]; // Saudação do responseModel
         }
     }
-    // Verifica se a mensagem corresponde a palavra-chave "turismo"
+    // Verifica se a mensagem corresponde a perguntas de FAQ
+    for (const faq of faqQuestions) {
+        if (normalizedMessage.includes(faq.question.toLowerCase())) {
+            console.log(`Resposta para FAQ encontrada na categoria '${faq.category}'.`);
+            const categoryResponses = responseModel[faq.category];
+            return categoryResponses
+                ? categoryResponses[Math.floor(Math.random() * categoryResponses.length)]
+                : "Desculpe, não consegui encontrar uma resposta para essa pergunta.";
+        }
+    }
+    // Verifica se a mensagem corresponde à palavra-chave "turismo"
     const tourismKeywords = ["turismo", "pontos turísticos", "lugares para visitar"];
     for (const keyword of tourismKeywords) {
         if (normalizedMessage.includes(keyword)) {
@@ -37,7 +47,7 @@ async function findResponse(userMessage) {
             return keywordResponse.response;
         }
     }
-    // Se nenhuma resposta específica for encontrada, retorna uma resposta aleatória de uma categoria aleatória do responseModel
+    // Resposta padrão se nenhuma correspondência for encontrada
     const randomCategoryKey = Object.keys(responseModel);
     const randomKey = randomCategoryKey[Math.floor(Math.random() * randomCategoryKey.length)];
     const randomResponse = responseModel[randomKey][Math.floor(Math.random() * responseModel[randomKey].length)];
@@ -46,7 +56,7 @@ async function findResponse(userMessage) {
 export const initSocket = (server) => {
     const io = new Server(server, {
         cors: {
-            origin: ['http://localhost:3000', 'http://192.168.43.54:3000'],
+            origin: '*',
             methods: ['GET', 'POST'],
             credentials: true,
         },
