@@ -99,7 +99,7 @@ async function findResponse(userMessage: string): Promise<string> {
   const aboutUsKeywords = ["Just for Fund", "sobre o Just for Fund", "",""];
   for (const keyword of aboutUsKeywords) {
       if (normalizedMessage.includes(keyword)) {
-          console.log("Resposta de localização encontrada.");
+          console.log("Resposta de aboutUs encontrada.");
           return responses.aboutUs[0]; // Resposta do responses para localização
       }
   }
@@ -107,7 +107,7 @@ async function findResponse(userMessage: string): Promise<string> {
   const servicesKeywords = ["serviços", "sobre vossos serviços", "servicos","services"];
   for (const keyword of servicesKeywords) {
       if (normalizedMessage.includes(keyword)) {
-          console.log("Resposta de localização encontrada.");
+          console.log("Resposta de services encontrada.");
           return responses.services[0]; // Resposta do responses para localização
       }
   }
@@ -125,7 +125,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const reservationsUsKeywords = ["reservas", "sobre as reservas", "tudo sobre reservas","reservations"];
     for (const keyword of reservationsUsKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de resevations encontrada.");
             return responses.reservations[0]; // Resposta do responses para localização
         }
     }
@@ -133,7 +133,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const contactKeywords = ["contactos", "sobre os contactos", "contact","vossos contactos"];
     for (const keyword of contactKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de contact encontrada.");
             return responses.contact[0]; // Resposta do responses para localização
         }
     }
@@ -141,7 +141,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const calendarKeywords = ["calendaio"];
     for (const keyword of calendarKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de calender encontrada.");
             return responses.calendar[0]; // Resposta do responses para localização
         }
     }
@@ -150,25 +150,25 @@ async function findResponse(userMessage: string): Promise<string> {
     const additionalInfoKeywords = ["detalhes de serviços", "detalhes de pacotes", "detalhe do serviço","detalhe do pacote"];
     for (const keyword of additionalInfoKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de additionalInfo encontrada.");
             return responses.additionalInfo[0]; // Resposta do responses para localização
         }
     }
 
 
     const pricesKeywords = ["precos", "preços", "sobre vossos precos","sobre vossos preços"];
-    for (const keyword of locationKeywords) {
+    for (const keyword of  pricesKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
-            return responses.location[0]; // Resposta do responses para localização
+            console.log("Resposta de prices encontrada.");
+            return responses. prices[0]; // Resposta do responses para localização
         }
     }
 
     const packagesKeywords = ["pacotes", "Pacotes", "sobre vossos pacotes","sobre vossos Pacotes"];
-    for (const keyword of locationKeywords) {
+    for (const keyword of packagesKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
-            return responses.location[0]; // Resposta do responses para localização
+            console.log("Resposta de packages encontrada.");
+            return responses.packages[0]; // Resposta do responses para localização
         }
     }
 
@@ -176,7 +176,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const faqKeywords = ["perguntas", "tranferêcias", "pergunta","transferencia"];
     for (const keyword of faqKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de faq encontrada.");
             return responses.faq[0]; // Resposta do responses para localização
         }
     }
@@ -185,7 +185,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const feedbackKeywords = ["feedback"];
     for (const keyword of feedbackKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de feedback encontrada.");
             return responses.feedback[0]; // Resposta do responses para localização
         }
     }
@@ -194,7 +194,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const hoursKeywords = ["hora"];
     for (const keyword of hoursKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de hours encontrada.");
             return responses.hours[0]; // Resposta do responses para localização
         }
     }
@@ -202,7 +202,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const helpKeywords = [""];
     for (const keyword of helpKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de help encontrada.");
             return responses.help[0]; // Resposta do responses para localização
         }
     }
@@ -211,7 +211,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const randomResponsesKeywords = [""];
     for (const keyword of randomResponsesKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de randomResponses encontrada.");
             return responses.randomResponses[0]; // Resposta do responses para localização
         }
     }
@@ -220,7 +220,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const landscapesKeywords = ["parque", "parques", "Parque", "Parques",];
     for (const keyword of landscapesKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de landscapes encontrada.");
             return responses.landscapes[0]; // Resposta do responses para localização
         }
     }
@@ -229,7 +229,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const cultureAndHistoryKeywords = ["Luanda", "luanda"];
     for (const keyword of cultureAndHistoryKeywords ) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de cultureAndHistory encontrada.");
             return responses.cultureAndHistory[0]; // Resposta do responses para localização
         }
     }
@@ -256,7 +256,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const festivalsAndEventsKeywords = ["festas", "festa", "eventos","Festa","Festas","Eventos","evento","Evento"];
     for (const keyword of festivalsAndEventsKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de festivalsAndEvents encontrada.");
             return responses.festivalsAndEvents[0]; // Resposta do responses para localização
         }
     }
@@ -265,7 +265,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const adventureTourismKeywords = ["ourtos servicos"];
     for (const keyword of adventureTourismKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de adventureTourism encontrada.");
             return responses.adventureTourism[0]; // Resposta do responses para localização
         }
     }
@@ -273,7 +273,7 @@ async function findResponse(userMessage: string): Promise<string> {
     const accommodationKeywords = ["acomodo", "acomodacao", "acomodação","como é a acomodação"];
     for (const keyword of accommodationKeywords) {
         if (normalizedMessage.includes(keyword)) {
-            console.log("Resposta de localização encontrada.");
+            console.log("Resposta de accommodation encontrada.");
             return responses.accommodation[0]; // Resposta do responses para localização
         }
     }
