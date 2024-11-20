@@ -96,7 +96,7 @@ async function findResponse(userMessage: string): Promise<string> {
     }
 
   // Verifica se a mensagem corresponde à palavra-chave "localização"
-  const aboutUsKeywords = ["Just for Fund", "sobre o Just for Fund", "",""];
+  const aboutUsKeywords = ["Just for Fund", "sobre o Just for Fund"];
   for (const keyword of aboutUsKeywords) {
       if (normalizedMessage.includes(keyword)) {
           console.log("Resposta de aboutUs encontrada.");
@@ -199,7 +199,7 @@ async function findResponse(userMessage: string): Promise<string> {
         }
     }
 
-    const helpKeywords = [""];
+    const helpKeywords = ["ajuda"];
     for (const keyword of helpKeywords) {
         if (normalizedMessage.includes(keyword)) {
             console.log("Resposta de help encontrada.");
@@ -208,7 +208,7 @@ async function findResponse(userMessage: string): Promise<string> {
     }
 
 
-    const randomResponsesKeywords = [""];
+    const randomResponsesKeywords = ["..."];
     for (const keyword of randomResponsesKeywords) {
         if (normalizedMessage.includes(keyword)) {
             console.log("Resposta de randomResponses encontrada.");
