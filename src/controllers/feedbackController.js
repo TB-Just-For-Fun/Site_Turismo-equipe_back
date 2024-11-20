@@ -85,7 +85,7 @@ const createFeedback = async (req, res) => {
 
 const getAllFeedback = async (req, res) => {
     try {
-        const feedbacks = await Feedback.find().populate('user', 'name');
+        const feedbacks = await Feedback.find();
         res.status(200).json(feedbacks);
     } catch (error) {
         console.error('Erro ao buscar feedbacks:', error);

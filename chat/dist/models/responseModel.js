@@ -129,7 +129,39 @@ export const responses = {
         "🙃 Essa é nova! Enquanto isso, que tal conhecer a Fenda da Tundavala?",
         "🌟 Que pergunta única! Vamos falar sobre as maravilhas de Angola?",
         "🎯 Enquanto eu verifico sua dúvida, que tal conferir nossos pacotes especiais?"
-    ]
+    ],
+    landscapes: [
+        "🏞️ **Parque Nacional de Kissama**: Famoso pela vida selvagem, é ideal para safáris e observação de elefantes, girafas e zebras.",
+        "🌿 **Parque Nacional da Quiçama**: Além da vida selvagem, oferece trilhas e atividades ao ar livre, uma verdadeira reserva natural.",
+        "🌵 **Deserto do Namibe**: Um cenário único no sul de Angola, com formações rochosas e dunas gigantes, perfeito para aventuras.",
+        "🏖️ **Cabo Ledo**: Conhecido por suas praias paradisíacas e águas cristalinas, é ideal para relaxamento e esportes aquáticos."
+    ],
+    cultureAndHistory: [
+        "🏛️ **Luanda**: A capital de Angola mistura modernidade com história, com museus como o Museu Nacional de Antropologia e o Museu de História Natural.",
+        "🏰 **Fortaleza de São Miguel**: Um marco histórico de Luanda, construída no século 16, com vista panorâmica da cidade.",
+        "📜 **Sítios arqueológicos**: Vários vestígios de antigas civilizações, como em Bengo e Malanje, mostram a rica história de Angola."
+    ],
+    beaches: [
+        "🏖️ **Praia de Sangano**: Popular perto de Luanda, com águas cristalinas e ambiente tranquilo.",
+        "🏝️ **Praia do Mussulo**: Uma ilha paradisíaca, perfeita para quem busca praias exóticas e resorts à beira-mar.",
+        "🌅 **Praia de Cabo Ledo**: Uma praia tranquila com águas calmas, ideal para relaxamento e esportes aquáticos."
+    ],
+    gastronomy: [
+        "🍽️ **Muamba de Galinha**: Prato tradicional com frango, amendoim, quiabos e molho de dendê.",
+        "🍲 **Calulu**: Feito com peixe seco ou carne, legumes e quiabo, uma iguaria tradicional de Angola.",
+        "🍛 **Funge**: Prato à base de milho, comum na África Central, servido com guisados e molhos variados."
+    ],
+    festivalsAndEvents: [
+        "🎬 **Festival de Cinema de Luanda (FESTICINE)**: Celebra o cinema africano e mundial com filmes, documentários e curtas.",
+        "🎉 **Carnaval de Luanda**: Um evento colorido e vibrante, com desfiles, música e danças tradicionais que atraem turistas do mundo todo."
+    ],
+    adventureTourism: [
+        "🏞️ **Trilhas e trekking**: A Serra da Leba oferece trilhas desafiadoras, em meio a montanhas e vales.",
+        "🌊 **Mergulho e esportes aquáticos**: As praias de Angola, como o Cabo Ledo, são perfeitas para mergulho e esportes aquáticos."
+    ],
+    accommodation: [
+        "🏨 O setor de hospedagem tem crescido, com opções de hotéis e resorts à beira-mar e pousadas mais simples para um turismo rústico e tranquilo."
+    ],
 };
 export const faqQuestions = [
     // Pacotes turísticos (tourism)
@@ -391,6 +423,10 @@ export const faqQuestions = [
     {
         question: "Quais são as condições para pacotes exclusivos?",
         category: "general"
+    },
+    {
+        question: "O que é a Just for Fund?",
+        category: "aboutUs"
     }
 ];
 const Response = mongoose.model('Response', ResponseSchema);
