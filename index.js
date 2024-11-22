@@ -50,6 +50,20 @@ app.use((req, res, next) => {
 });
 
 
+app.post('/login', async (req, res) => {
+    try {
+      const usuario = await Usuario.findOne({ email: req.body.email });
+      if (!usuario) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
+      }
+      // Continue com a lógica de autenticação
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Erro no servidor' });
+    }
+  });
+  
+
 //rotas
     //rota principal
 app.get("/", (req, res) => { res.json("Just For Fun, all rights reserved.") });

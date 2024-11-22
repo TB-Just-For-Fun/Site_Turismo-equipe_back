@@ -34,8 +34,7 @@ userController.login = async (req, res) => {
             return jwt.sign(
                 { 
                     id: user.id,  
-                    role: user.role
-                     
+                    role: user.role 
                 },  
                 process.env.JWT_SECRET,
                 { expiresIn: '2d' }
@@ -46,19 +45,14 @@ userController.login = async (req, res) => {
 
         // Define o cookie com o token
         res.cookie('token', token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'None',
-            maxAge: 2 * 24 * 60 * 60 * 1000
+            httpOnly: true,     // Impede o acesso via JavaScript
+            secure: process.env.NODE_ENV === 'production', // Somente HTTPS em produção
+            sameSite: 'Strict', // Proteção contra CSRF
+            maxAge: 2 * 24 * 60 * 60 * 1000  // Define a duração do cookie (2 dias)
         });
 
-        // Exibe o valor do cookie no console
-        console.log('Token gerado e armazenado no cookie:', token);
-        console.log('---------------------------------------------')
-        console.log('Token role:', user.role, ' - Logado com sucesso'); 
-
-        return res.status(200).send({ message: 'Login bem-sucedido', token});
-            
+        // Retorna a resposta de sucesso
+        return res.status(200).send({ message: 'Login bem-sucedido' });
     } catch (error) {
         console.error('Erro no login:', error); // Log detalhado
         return res.status(500).send({ message: "Erro no login", error });
@@ -70,7 +64,7 @@ userController.login = async (req, res) => {
 userController.logout = async (req, res) => {
     try {
         const token = req.cookies.token;
-        
+
         if (!token) {
             return res.status(400).send({ message: "Nenhum token encontrado para logout" });
         }
@@ -234,7 +228,7 @@ userController.getById = async (req, res) => {
 // Método getByEmail
 userController.getByEmail = async (req, res) => {
     try {
-        const usuario = await userModel.findOne(req.query); 
+        const usuario = await userModel.findOne(req.query);
         if (!usuario) {
             return res.status(404).json({ message: "Usuário não encontrado" });
         }
@@ -256,10 +250,16 @@ userController.create = async (req, res) => {
             return res.status(400).send({ message: "Todos os campos são obrigatórios" });
         }
 
-        // Verifica se o email ou número já existem
-        const existingUser = await userModel.findOne({ $or: [{ email }, { numero }] });
-        if (existingUser) {
-            return res.status(409).send({ message: "Este email ou número já existe!" });
+        
+        const existingEmail = await userModel.findOne({ email });
+        if (existingEmail) {
+            return res.status(409).send({ message: "Este email já existe!" });
+        }
+
+        
+        const existingNumero = await userModel.findOne({ numero });
+        if (existingNumero) {
+            return res.status(409).send({ message: "Este número já existe!" });
         }
 
         // Criptografa a senha
@@ -318,7 +318,7 @@ async function enviarEmailConfirmacao(email, username) {
             Prepare-se para explorar o mundo de forma divertida e única!\n\n
             Boa viagem! 🧳✈️\n\n
             Faça login agora, com suas credenciais:\n
-            <a href="https://192.168.100.24/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
+            <a href="https://www.seusite.com/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
         `;
 
         await transporter.sendMail({
@@ -360,7 +360,7 @@ userController.put = async (req, res) => {
 
         // Atualiza o usuário
         const usuarioAtualizado = await userModel.findByIdAndUpdate(usuarioAtual._id, updateFields, { new: true });
-        
+
         // Envia email de promoção, se aplicável
         await verificarEEnviarEmailPromocao(usuarioAtualizado, usuarioAtual);
 
@@ -447,6 +447,7 @@ function temPermissaoParaAtualizar(user, updateFields, usuarioAtual, isUpdatingS
     }
 
     // Lógica adicional para outras permissões (por exemplo, admin)
+    // Exemplo: 
     if (user.role === 'admin') {
         return true; // Admin pode atualizar qualquer usuário
     }
@@ -489,7 +490,7 @@ userController.patch = async (req, res) => {
         console.error(error);
         return res.status(500).json({ message: "Erro ao atualizar o usuário", error });
     }
-}; 
+};
 
 // Função auxiliar para verificar permissões de atualização
 function temPermissaoParaAtualizar(user, updateFields, usuarioAtual) {
@@ -517,7 +518,7 @@ function temPermissaoParaAtualizar(user, updateFields, usuarioAtual) {
     }
 
     return true;
-} 
+}
 
 // Método PATCH para atualizar parcialmente um usuário pelo email
 userController.patchByEmail = async (req, res) => {
@@ -528,7 +529,7 @@ userController.patchByEmail = async (req, res) => {
 
     try {
         const { email } = req.query;  // Email do usuário a ser atualizado
-        
+
         // Verifica se o email é válido
         if (!validator.isEmail(email)) {
             return res.status(400).json({ message: "Email inválido" });
@@ -631,7 +632,7 @@ async function enviarEmailPromocao(email) {
             Vamos juntos fazer do Just For Fun um lugar ainda mais incrível!\n\n
             👏 Parabéns novamente! 👏\n\n
             Faça login agora, com suas credenciais:\n
-            <a href="https://192.168.100.24/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
+            <a href="https://www.seusite.com/login" style="display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">Login</a>
         `;
 
         await transporter.sendMail({
@@ -742,7 +743,7 @@ userController.apagar = async (req, res) => {
 // Método DELETE para deletar um usuário por email
 userController.apagarByEmail = async (req, res) => {
     try {
-        const { email } = req.query; 
+        const { email } = req.query;
 
         // Verificação de email válido
         if (!validator.isEmail(email)) {
@@ -752,7 +753,7 @@ userController.apagarByEmail = async (req, res) => {
         const { role, email: userEmail } = req.user;  // Pega o papel e o email do usuário logado
         // Busca o usuário pelo email
         const usuarioDeletado = await userModel.findOne({ email });
-        
+
         if (!usuarioDeletado) {
             return res.status(404).json({ message: "Usuário não encontrado" });
         }
