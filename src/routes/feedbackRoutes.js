@@ -89,14 +89,18 @@ router.delete("/:id", verifyToken, async (req, res) => {
             return res.status(404).json({ message: "Feedback não encontrado." });
         }
 
+        console.log('User Role:', req.role);  // Logando a role
+        console.log('User ID:', req.userId);  // Logando o ID do usuário
+        console.log('Feedback User ID:', feedback.user);  // Logando o ID do dono do feedback (campo 'user')
+
         // Permissões de deleção
-        if (req.role === 'superadmin') {
+        if (req.role === 'administrador_supremo') {
             // Superadmin pode deletar qualquer feedback
             await feedback.deleteOne();
         } else if (req.role === 'admin') {
             // Admin pode deletar qualquer feedback de qualquer usuário
             await feedback.deleteOne();
-        } else if (feedback.userId.toString() === req.userId) {
+        } else if (feedback.user.toString() === req.userId.toString()) {
             // O próprio usuário pode deletar apenas seu feedback
             await feedback.deleteOne();
         } else {
@@ -109,5 +113,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
         res.status(500).json({ message: "Erro ao deletar feedback", error: error.message });
     }
 });
+
+
 
 module.exports = router;
