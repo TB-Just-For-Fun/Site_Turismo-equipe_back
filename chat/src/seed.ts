@@ -169,7 +169,5 @@ export const intents = [
     },
   ];
   
-
-
 // Exemplo de chamada
 respondToUser("oi").then(console.log); // Isso deve retornar uma resposta para "oi"
