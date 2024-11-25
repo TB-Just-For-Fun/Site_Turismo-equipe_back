@@ -32,7 +32,7 @@ app.use(bodyParser.json());
 
 //usando o cors
 app.use(cors({
-    origin: 'http://localhost:3000', 
+    origin: '*', 
     credentials: true
 }));
 
@@ -42,13 +42,27 @@ app.use(cookieParser()); // Aqui está o cookie-parser
 
 //adicionando o header ao servidor
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000'); // Domínio do front-end
+    res.header('Access-Control-Allow-Origin', '*'); // Domínio do front-end
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
 
+
+app.post('/login', async (req, res) => {
+    try {
+      const usuario = await Usuario.findOne({ email: req.body.email });
+      if (!usuario) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
+      }
+      // Continue com a lógica de autenticação
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Erro no servidor' });
+    }
+  });
+  
 
 //rotas
     //rota principal
